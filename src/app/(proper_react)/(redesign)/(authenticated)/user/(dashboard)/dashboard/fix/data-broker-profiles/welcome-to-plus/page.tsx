@@ -56,9 +56,9 @@ export default async function WelcomeToPlusPage() {
   };
 
   const enabledFeatureFlags = await getEnabledFeatureFlags({
-    ignoreAllowlist: true,
+    ignoreAllowlist: false,
+    email: session.user.email,
   });
-  const howItWorksFlagEnabled = enabledFeatureFlags.includes("HowItWorksPage");
 
   // If the current user is a subscriber and their OneRep profile is not
   // activated: Most likely we were not able or failed to kick-off the
@@ -78,7 +78,7 @@ export default async function WelcomeToPlusPage() {
       data={data}
       subscriberEmails={subscriberEmails}
       l10n={getL10n()}
-      howItWorksFlagEnabled={howItWorksFlagEnabled}
+      enabledFeatureFlags={enabledFeatureFlags}
     />
   );
 }

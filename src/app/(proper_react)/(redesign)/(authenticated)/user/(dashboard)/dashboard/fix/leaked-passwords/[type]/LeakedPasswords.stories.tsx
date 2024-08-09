@@ -64,13 +64,7 @@ const LeakedPasswordsWrapper = (props: {
   }
 
   return (
-    <Shell
-      l10n={getL10n()}
-      session={mockedSession}
-      nonce=""
-      countryCode="nl"
-      howItWorksFlagEnabled
-    >
+    <Shell l10n={getL10n()} session={mockedSession} nonce="" countryCode="nl">
       <LeakedPasswordsLayout
         subscriberEmails={[]}
         type={props.type}
@@ -81,6 +75,7 @@ const LeakedPasswordsWrapper = (props: {
           user: mockedSession.user,
         }}
         isEligibleForPremium={true}
+        enabledFeatureFlags={["SetExpectationsForUsers"]}
       />
     </Shell>
   );

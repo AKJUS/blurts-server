@@ -37,7 +37,6 @@ export async function getDeletedFeatureFlags() {
     .returning("*");
 }
 
-/** @deprecated The method type not be used */
 export type FeatureFlagName =
   | "RedesignedEmails"
   | "UpdatedEmailPreferencesOption"
@@ -48,13 +47,13 @@ export type FeatureFlagName =
   | "DiscountCouponNextThreeMonths"
   | "LatestScanDateCsatSurvey"
   | "AutomaticRemovalCsatSurvey"
-  | "HowItWorksPage"
   | "AdditionalRemovalStatuses"
-  | "PetitionBannerCsatSurvey";
+  | "PetitionBannerCsatSurvey"
+  /** Set clear expectations about auto-removal finishing in time for *most*, not *all* data brokers: */
+  | "SetExpectationsForUsers";
 
 /**
  * @param options
- * @deprecated The method should not be used, use Nimbus experiment or roll-out: /src/app/functions/server/getExperiments
  */
 export async function getEnabledFeatureFlags(
   options:
@@ -68,9 +67,12 @@ export async function getEnabledFeatureFlags(
     .and.where("is_enabled", true);
 
   if (!options.ignoreAllowlist) {
-    query = query.and
-      .whereRaw("ARRAY_LENGTH(allow_list, 1) IS NULL")
-      .orWhereRaw("? = ANY(allow_list)", options.email);
+    query = query.andWhere(
+      (whereBuilder) =>
+        void whereBuilder
+          .whereRaw("ARRAY_LENGTH(allow_list, 1) IS NULL")
+          .orWhereRaw("? = ANY(allow_list)", options.email),
+    );
   }
 
   const enabledFlagNames = await query;
@@ -93,7 +95,7 @@ export async function getFeatureFlagByName(name: string) {
  */
 export async function addFeatureFlag(flag: FeatureFlag) {
   logger.info("addFeatureFlag", flag);
-  const featureFlagDb: FeatureFlagRow = {
+  const featureFlagDb: Omit<FeatureFlagRow, "created_at" | "modified_at"> = {
     name: flag.name,
     is_enabled: flag.isEnabled,
     description: flag.description,

@@ -107,13 +107,13 @@ const HighRiskBreachWrapper = (props: {
       session={mockedSession}
       nonce=""
       countryCode={data.countryCode}
-      howItWorksFlagEnabled
     >
       <HighRiskBreachLayout
         subscriberEmails={[]}
         type={props.type}
         data={data}
         isEligibleForPremium={true}
+        enabledFeatureFlags={["SetExpectationsForUsers"]}
       />
     </Shell>
   );
