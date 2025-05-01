@@ -1,4 +1,7 @@
 name: Build Docker image check
+
+permissions: {}
+
 on:
   pull_request:
 jobs:
@@ -6,9 +9,20 @@ jobs:
     name: Build Docker image
     runs-on: ubuntu-latest
     steps:
+      - name: Check Docker Version
+        run: docker --version
+
+      - name: Install Latest Docker
+        run: |
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+          sudo apt-get update
+          sudo apt-get install docker-ce
+
       - name: Check out the repo
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Build Docker image
         run: docker build .
-

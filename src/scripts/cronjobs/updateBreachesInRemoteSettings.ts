@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 "use strict";
 
 /**
@@ -33,22 +37,40 @@
  *
  */
 
-import AppConstants from "../../appConstants";
 import * as HIBP from "../../utils/hibp";
-import type { Breach } from "../../app/functions/universal/breach";
 
 type RemoteSettingsBreach = Pick<
-  Breach,
+  HIBP.HibpGetBreachesResponse[number],
   "Name" | "Domain" | "BreachDate" | "PwnCount" | "AddedDate" | "DataClasses"
 >;
 
-const BREACHES_COLLECTION = "fxmonitor-breaches";
-const FX_RS_COLLECTION = `${AppConstants.FX_REMOTE_SETTINGS_WRITER_SERVER}/buckets/main-workspace/collections/${BREACHES_COLLECTION}`;
-const FX_RS_RECORDS = `${FX_RS_COLLECTION}/records`;
-const FX_RS_WRITER_USER = AppConstants.FX_REMOTE_SETTINGS_WRITER_USER;
-const FX_RS_WRITER_PASS = AppConstants.FX_REMOTE_SETTINGS_WRITER_PASS;
+const FX_REMOTE_SETTINGS_WRITER_USER =
+  process.env.FX_REMOTE_SETTINGS_WRITER_USER;
+const FX_REMOTE_SETTINGS_WRITER_PASS =
+  process.env.FX_REMOTE_SETTINGS_WRITER_PASS;
+const FX_REMOTE_SETTINGS_WRITER_SERVER =
+  process.env.FX_REMOTE_SETTINGS_WRITER_SERVER;
 
-async function whichBreachesAreNotInRemoteSettingsYet(breaches: Breach[]) {
+if (
+  !FX_REMOTE_SETTINGS_WRITER_USER ||
+  !FX_REMOTE_SETTINGS_WRITER_PASS ||
+  !FX_REMOTE_SETTINGS_WRITER_SERVER
+) {
+  console.error(
+    "updatebreaches requires FX_REMOTE_SETTINGS_WRITER_SERVER, FX_REMOTE_SETTINGS_WRITER_USER, FX_REMOTE_SETTINGS_WRITER_PASS.",
+  );
+  process.exit(1);
+}
+
+const BREACHES_COLLECTION = "fxmonitor-breaches";
+const FX_RS_COLLECTION = `${FX_REMOTE_SETTINGS_WRITER_SERVER}/buckets/main-workspace/collections/${BREACHES_COLLECTION}`;
+const FX_RS_RECORDS = `${FX_RS_COLLECTION}/records`;
+const FX_RS_WRITER_USER = FX_REMOTE_SETTINGS_WRITER_USER;
+const FX_RS_WRITER_PASS = FX_REMOTE_SETTINGS_WRITER_PASS;
+
+async function whichBreachesAreNotInRemoteSettingsYet(
+  breaches: HIBP.HibpGetBreachesResponse,
+) {
   const response = await fetch(FX_RS_RECORDS, {
     headers: {
       Authorization: `Basic ${Buffer.from(FX_RS_WRITER_USER + ":" + FX_RS_WRITER_PASS).toString("base64")}`,
@@ -56,7 +78,9 @@ async function whichBreachesAreNotInRemoteSettingsYet(breaches: Breach[]) {
   });
   const fxRSRecords = await response.json();
   const remoteSettingsBreachesSet = new Set(
-    fxRSRecords.body.data.map((b: Breach) => b.Name),
+    fxRSRecords.body.data.map(
+      (b: HIBP.HibpGetBreachesResponse[number]) => b.Name,
+    ),
   );
 
   return breaches.filter(({ Name }) => !remoteSettingsBreachesSet.has(Name));
@@ -87,20 +111,9 @@ async function requestReviewOnBreachesCollection() {
   return response.json();
 }
 
-if (
-  !AppConstants.FX_REMOTE_SETTINGS_WRITER_USER ||
-  !AppConstants.FX_REMOTE_SETTINGS_WRITER_PASS ||
-  !AppConstants.FX_REMOTE_SETTINGS_WRITER_SERVER
-) {
-  console.error(
-    "updatebreaches requires FX_REMOTE_SETTINGS_WRITER_SERVER, FX_REMOTE_SETTINGS_WRITER_USER, FX_REMOTE_SETTINGS_WRITER_PASS.",
-  );
-  process.exit(1);
-}
-
 (async () => {
-  const allHibpBreaches = (await HIBP.req("/breaches")) as { body: Breach[] };
-  const verifiedSiteBreaches = allHibpBreaches.body.filter((breach) => {
+  const allHibpBreaches = await HIBP.fetchHibpBreaches();
+  const verifiedSiteBreaches = allHibpBreaches.filter((breach) => {
     return (
       !breach.IsRetired &&
       !breach.IsSpamList &&

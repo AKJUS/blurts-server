@@ -1,0 +1,48 @@
+@use "../../../../../../../tokens";
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$layout-xs;
+
+  .radioGroup {
+    display: flex;
+    flex-direction: column;
+    gap: tokens.$layout-xs;
+    justify-content: space-between;
+    width: 100%;
+
+    label {
+      align-items: center;
+      display: flex;
+      gap: tokens.$layout-xs;
+      justify-content: space-between;
+
+      @media screen and (min-width: tokens.$content-md) {
+        gap: tokens.$layout-md;
+      }
+
+      div {
+        display: flex;
+        flex-direction: column;
+        gap: tokens.$spacing-xs;
+      }
+
+      svg {
+        flex: 0 0 auto;
+      }
+    }
+
+    .radioInputs {
+      display: flex;
+      flex-direction: column;
+      font: tokens.$text-body-sm;
+      gap: tokens.$spacing-sm;
+    }
+  }
+
+  .switchInput {
+    display: flex;
+    justify-content: space-between;
+  }
+}

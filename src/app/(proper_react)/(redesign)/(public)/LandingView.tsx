@@ -26,18 +26,19 @@ import { TelemetryLink } from "../../../components/client/TelemetryLink";
 import { HeresHowWeHelp } from "./HeresHowWeHelp";
 import { ScanLimit } from "./ScanLimit";
 import { FaqSection } from "./Faq";
-import { FeatureFlagName } from "../../../../db/tables/featureFlags";
-import { AccountDeletionNotification } from "./AccountDeletionNotification";
 import { ExperimentData } from "../../../../telemetry/generated/nimbus/experiments";
 import { FreeScanCta } from "./FreeScanCta";
+import { TopNavBar } from "./TopNavBar";
+import { AccountDeletionNotification } from "./AccountDeletionNotification";
+import { FeatureFlagName } from "../../../../db/tables/featureFlags";
 
 export type Props = {
   eligibleForPremium: boolean;
   l10n: ExtendedReactLocalization;
   countryCode: string;
   scanLimitReached: boolean;
-  enabledFlags: FeatureFlagName[];
-  experimentData: ExperimentData;
+  experimentData: ExperimentData["Features"];
+  enabledFeatureFlags: FeatureFlagName[];
 };
 
 export const View = (props: Props) => {
@@ -45,7 +46,11 @@ export const View = (props: Props) => {
     <>
       <AccountDeletionNotification />
       <main className={styles.wrapper}>
-        {props.eligibleForPremium && <TopNavBar l10n={props.l10n} />}
+        {props.eligibleForPremium && (
+          <div className={styles.navbar}>
+            <TopNavBar />
+          </div>
+        )}
         <header className={styles.hero}>
           <div className={styles.heroContent}>
             <h1>{props.l10n.getString("landing-all-hero-title")}</h1>
@@ -69,6 +74,7 @@ export const View = (props: Props) => {
                   field: "entered_email_address_header",
                 }}
                 experimentData={props.experimentData}
+                labelPosition="bottom"
               />
             )}
           </div>
@@ -141,6 +147,7 @@ export const View = (props: Props) => {
                   field: "entered_email_address_second",
                 }}
                 experimentData={props.experimentData}
+                labelPosition="bottom"
               />
             </span>
             <div className={styles.illustration}>
@@ -188,6 +195,7 @@ export const View = (props: Props) => {
                   field: "entered_email_address_third",
                 }}
                 experimentData={props.experimentData}
+                labelPosition="bottom"
               />
             </span>
             <div className={styles.illustration}>
@@ -209,6 +217,7 @@ export const View = (props: Props) => {
             }}
             scanLimitReached={props.scanLimitReached}
             experimentData={props.experimentData}
+            labelPosition="bottom"
           />
         </div>
 
@@ -253,56 +262,11 @@ export const View = (props: Props) => {
             }}
             scanLimitReached={props.scanLimitReached}
             experimentData={props.experimentData}
+            labelPosition="bottom"
           />
         </div>
       </main>
     </>
-  );
-};
-
-export const TopNavBar = ({ l10n }: { l10n: ExtendedReactLocalization }) => {
-  return (
-    <div className={styles.navbar}>
-      <div className={styles.navbarLinksContainer}>
-        <TelemetryLink
-          className={styles.navbarLinks}
-          href="/how-it-works"
-          eventData={{
-            link_id: "navbar_how_it_works",
-          }}
-        >
-          {l10n.getString("landing-all-hero-navbar-link-how-it-works")}
-        </TelemetryLink>
-        <TelemetryLink
-          className={styles.navbarLinks}
-          href="#pricing"
-          eventData={{
-            link_id: "navbar_pricing",
-          }}
-        >
-          {l10n.getString("landing-all-hero-navbar-link-pricing")}
-        </TelemetryLink>
-        <TelemetryLink
-          data-testid="navbar_faqs"
-          className={styles.navbarLinks}
-          href="#faq"
-          eventData={{
-            link_id: "navbar_faqs",
-          }}
-        >
-          {l10n.getString("landing-all-hero-navbar-link-faqs")}
-        </TelemetryLink>
-        <TelemetryLink
-          className={styles.navbarLinks}
-          href="/breaches"
-          eventData={{
-            link_id: "navbar_breaches",
-          }}
-        >
-          {l10n.getString("landing-all-hero-navbar-link-all-breaches")}
-        </TelemetryLink>
-      </div>
-    </div>
   );
 };
 
@@ -367,18 +331,25 @@ const Plans = (props: Props) => {
             }}
             scanLimitReached={props.scanLimitReached}
             experimentData={props.experimentData}
+            labelPosition="bottom"
           />
         </div>
       )}
-
       <PlansTable
         aria-labelledby={headingId}
         premiumSubscriptionUrl={{
-          monthly: getPremiumSubscriptionUrl({ type: "monthly" }),
-          yearly: getPremiumSubscriptionUrl({ type: "yearly" }),
+          monthly: getPremiumSubscriptionUrl({
+            type: "monthly",
+            enabledFeatureFlags: props.enabledFeatureFlags,
+          }),
+          yearly: getPremiumSubscriptionUrl({
+            type: "yearly",
+            enabledFeatureFlags: props.enabledFeatureFlags,
+          }),
         }}
         subscriptionBillingAmount={getSubscriptionBillingAmount()}
         scanLimitReached={props.scanLimitReached}
+        enabledFeatureFlags={props.enabledFeatureFlags}
       />
     </div>
   );

@@ -16,6 +16,7 @@ export type Props = {
   title?: ReactNode;
   illustration?: ReactNode;
   variant?: "vertical" | "horizontal";
+  fitContent?: boolean;
 } & AriaDialogProps;
 
 export const Dialog = ({
@@ -24,6 +25,7 @@ export const Dialog = ({
   title,
   illustration,
   variant,
+  fitContent,
   ...otherProps
 }: Props) => {
   const l10n = useL10n();
@@ -58,14 +60,13 @@ export const Dialog = ({
           height="14"
         />
       </button>
-    ) : /* c8 ignore next */
-    null;
+    ) : null;
 
   return (
     <div
       {...dialogProps}
       ref={dialogRef}
-      className={`${styles.dialog} ${variant ? styles[variant] : ""}`}
+      className={`${styles.dialog} ${variant ? styles[variant] : ""} ${fitContent ? styles.fitContent : ""}`}
     >
       {dismissButton}
       <div tabIndex={-1} ref={dialogTitleRef} className={styles.header}>

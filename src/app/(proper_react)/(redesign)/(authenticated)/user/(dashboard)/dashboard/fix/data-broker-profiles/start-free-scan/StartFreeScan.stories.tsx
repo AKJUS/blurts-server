@@ -6,13 +6,16 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { OnerepScanRow } from "knex/types/tables";
 import { StartFreeScanView } from "./StartFreeScanView";
 import {
+  createRandomAnnouncement,
   createRandomBreach,
   createRandomScanResult,
   createUserWithPremiumSubscription,
 } from "../../../../../../../../../../apiMocks/mockData";
-import { Shell } from "../../../../../../../Shell";
+import { Shell } from "../../../../../../../Shell/Shell";
 import { getL10n } from "../../../../../../../../../functions/l10n/storybookAndJest";
 import { LatestOnerepScanData } from "../../../../../../../../../../db/tables/onerep_scans";
+import { defaultExperimentData } from "../../../../../../../../../../telemetry/generated/nimbus/experiments";
+import { UserAnnouncementWithDetails } from "../../../../../../../../../../db/tables/user_announcements";
 
 const mockedScan: OnerepScanRow = {
   created_at: new Date(1998, 2, 31),
@@ -46,6 +49,12 @@ const meta: Meta<typeof StartFreeScanView> = {
 export default meta;
 type Story = StoryObj<typeof StartFreeScanView>;
 
+const mockedAnnouncements: UserAnnouncementWithDetails[] = [
+  createRandomAnnouncement({ audience: "has_not_run_scan" }),
+  createRandomAnnouncement({ audience: "has_not_run_scan" }),
+  createRandomAnnouncement({ audience: "has_not_run_scan" }),
+];
+
 export const StartFreeScanViewStory: Story = {
   name: "1a. Free scan",
   render: () => {
@@ -55,7 +64,9 @@ export const StartFreeScanViewStory: Story = {
         session={mockedSession}
         nonce=""
         countryCode="us"
-        howItWorksFlagEnabled
+        enabledFeatureFlags={[]}
+        experimentData={defaultExperimentData["Features"]}
+        announcements={mockedAnnouncements}
       >
         <StartFreeScanView
           data={{
@@ -65,6 +76,7 @@ export const StartFreeScanViewStory: Story = {
             user: mockedSession.user,
           }}
           subscriberEmails={[]}
+          enabledFeatureFlags={[]}
         />
       </Shell>
     );

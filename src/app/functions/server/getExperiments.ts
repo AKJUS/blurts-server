@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { headers } from "next/headers";
 import { captureException } from "@sentry/node";
 import { logger } from "./logging";
 import {
@@ -10,6 +11,15 @@ import {
   localExperimentData,
 } from "../../../telemetry/generated/nimbus/experiments";
 import { ExperimentationId } from "./getExperimentationId";
+import { getEnabledFeatureFlags } from "../../../db/tables/featureFlags";
+
+/**
+ * After we removing the `CirrusV2` flag, we can return the full `ExperimentData`/
+ * But until then, we can make the old experiment data object look like the new one,
+ * but we can't backfill the `Enrollments` property.
+ */
+export type ExperimentData_V2_Or_V2LikeV1 = Partial<ExperimentData> &
+  Required<Pick<ExperimentData, "Features">>;
 
 /**
  * Call the Cirrus sidecar, which returns a list of eligible experiments for the current user.
@@ -18,7 +28,6 @@ import { ExperimentationId } from "./getExperimentationId";
  * @param params
  * @param params.experimentationId
  * @param params.locale
- * @param params.previewMode
  * @param params.countryCode
  * @returns
  */
@@ -26,32 +35,39 @@ export async function getExperiments(params: {
   experimentationId: ExperimentationId;
   locale: string;
   countryCode: string;
-  previewMode: boolean;
-}): Promise<ExperimentData> {
-  // TODO MNTOR-3380 - until Cirrus implements preview mode, set all Nimbus features to `true` for QA purposes.
-  if (params.previewMode === true) {
-    // Clone the `localExperimentData` object so we don't modify the exported data structure.
-    const overriddenExperimentData = Object.fromEntries(
-      Object.entries(localExperimentData).map(
-        ([experimentId, experimentConfig]) => {
-          return [experimentId, { ...experimentConfig, enabled: true }];
-        },
-      ),
-    ) as ExperimentData;
-    return overriddenExperimentData;
-  }
-
+}): Promise<ExperimentData_V2_Or_V2LikeV1> {
   if (["local"].includes(process.env.APP_ENV ?? "local")) {
     return localExperimentData;
   }
 
-  const serverUrl = process.env.NIMBUS_SIDECAR_URL;
-  if (!serverUrl) {
+  if (!process.env.NIMBUS_SIDECAR_URL) {
     throw new Error("env var NIMBUS_SIDECAR_URL not set");
   }
 
+  const serverUrl = new URL(process.env.NIMBUS_SIDECAR_URL);
+  const flags = await getEnabledFeatureFlags({ isSignedOut: true });
+  if (flags.includes("CirrusV2")) {
+    serverUrl.pathname = "/v2/features";
+  } else {
+    serverUrl.pathname = "/v1/features";
+  }
+
+  const headersList = await headers();
+  // Check if the Nimbus preview mode has been set by the middleware.
+  const nimbusPreviewMode = headersList.get("x-nimbus-preview-mode");
+  const previewMode = nimbusPreviewMode === "true";
+
   try {
-    const response = await fetch(`${serverUrl}/v1/features`, {
+    if (previewMode === true) {
+      serverUrl.searchParams.set("nimbus_preview", "true");
+    }
+
+    logger.info("Sending request to Cirrus", {
+      serverUrl: serverUrl.toString(),
+      previewMode,
+    });
+
+    const response = await fetch(serverUrl, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -66,11 +82,38 @@ export async function getExperiments(params: {
       }),
     });
 
-    const experimentData = await response.json();
+    if (!response.ok) {
+      logger.error("Cirrus request failed", {
+        status: response.status,
+        url: serverUrl.toString(),
+      });
+      throw new Error(`Cirrus request failed: ${response.statusText}`);
+    }
+
+    // With the `CirrusV2` flag enabled, the response is `ExperimentData`,
+    // otherwise, it's just `ExperimentData["Features"]`.
+    const json = (await response.json()) as
+      | ExperimentData
+      | ExperimentData["Features"];
+
+    let experimentData: ExperimentData_V2_Or_V2LikeV1;
+    if (flags.includes("CirrusV2")) {
+      experimentData = json as ExperimentData;
+    } else {
+      experimentData = {
+        Features: json as ExperimentData["Features"],
+      };
+    }
 
     return (experimentData as ExperimentData) ?? defaultExperimentData;
   } catch (ex) {
-    logger.error(`Could not connect to Cirrus on ${serverUrl}`, ex);
+    logger.error("Could not connect to Cirrus", {
+      serverUrl,
+      ex,
+      flags,
+      params,
+      previewMode,
+    });
     captureException(ex);
     return defaultExperimentData;
   }

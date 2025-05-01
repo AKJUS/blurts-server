@@ -5,22 +5,27 @@
 import { notFound } from "next/navigation";
 import { getBreachByName } from "../../../../../../utils/hibp";
 import { getBreaches } from "../../../../../functions/server/getBreaches";
-import { getL10n } from "../../../../../functions/l10n/serverComponents";
+import {
+  getAcceptLangHeaderInServerComponents,
+  getL10n,
+} from "../../../../../functions/l10n/serverComponents";
 import { BreachDetailsView } from "./BreachDetailView";
 
 export async function generateMetadata(props: {
-  params: { breachName: string };
+  params: Promise<{ breachName: string }>;
 }) {
-  const l10n = getL10n();
+  const l10n = getL10n(await getAcceptLangHeaderInServerComponents());
   const allBreaches = await getBreaches();
-  const breach = getBreachByName(allBreaches, props.params.breachName);
+  const breach = getBreachByName(allBreaches, (await props.params).breachName);
 
   if (!breach) {
     return {};
   }
 
   return {
-    title: `${l10n.getString("brand-mozilla-monitor")} - ${breach.Title}`,
+    title: l10n.getString("breach-detail-meta-page-title", {
+      company: breach.Title,
+    }),
     twitter: {
       card: "summary_large_image",
       title: l10n.getString("breach-detail-meta-social-title", {
@@ -43,9 +48,11 @@ export async function generateMetadata(props: {
   };
 }
 
-export default async function Page(props: { params: { breachName: string } }) {
-  const l10n = getL10n();
-  const breachName = props.params.breachName;
+export default async function Page(props: {
+  params: Promise<{ breachName: string }>;
+}) {
+  const l10n = getL10n(await getAcceptLangHeaderInServerComponents());
+  const breachName = (await props.params).breachName;
   const allBreaches = await getBreaches();
   const breach = getBreachByName(allBreaches, breachName);
 

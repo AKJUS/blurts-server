@@ -4,17 +4,23 @@
 
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
-import AppConstants from "../../../../../appConstants";
 
 import { getSubscriberByFxaUid } from "../../../../../db/tables/subscribers";
-import { addSubscriberUnverifiedEmailHash } from "../../../../../db/tables/emailAddresses.js";
+import { addSubscriberUnverifiedEmailHash } from "../../../../../db/tables/emailAddresses";
 
 import { sendVerificationEmail } from "../../../utils/email";
 
-import { validateEmailAddress } from "../../../../../utils/emailAddress";
-import { getL10n } from "../../../../functions/l10n/serverComponents";
+import {
+  getAcceptLangHeaderInServerComponents,
+  getL10n,
+} from "../../../../functions/l10n/serverComponents";
 import { initEmail } from "../../../../../utils/email";
-import { CONST_MAX_NUM_ADDRESSES } from "../../../../../constants";
+import {
+  CONST_MAX_NUM_ADDRESSES,
+  CONST_MAX_NUM_ADDRESSES_PLUS,
+} from "../../../../../constants";
+import { validateEmailAddress } from "../../../../../utils/emailAddress";
+import { hasPremium } from "../../../../functions/universal/user";
 
 interface EmailAddRequest {
   email: string;
@@ -22,7 +28,7 @@ interface EmailAddRequest {
 
 export async function POST(req: NextRequest) {
   const token = await getToken({ req });
-  const l10n = getL10n();
+  const l10n = getL10n(await getAcceptLangHeaderInServerComponents());
 
   if (typeof token?.subscriber?.fxa_uid === "string") {
     try {
@@ -44,7 +50,10 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      if (emailCount >= CONST_MAX_NUM_ADDRESSES) {
+      const maxNumEmailAddresses = hasPremium(subscriber)
+        ? CONST_MAX_NUM_ADDRESSES_PLUS
+        : CONST_MAX_NUM_ADDRESSES;
+      if (emailCount >= maxNumEmailAddresses) {
         return NextResponse.json(
           {
             success: false,
@@ -108,6 +117,6 @@ export async function POST(req: NextRequest) {
     }
   } else {
     // Not Signed in, redirect to home
-    return NextResponse.redirect(AppConstants.SERVER_URL, 301);
+    return NextResponse.redirect(process.env.SERVER_URL ?? "/", 301);
   }
 }

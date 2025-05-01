@@ -19,12 +19,38 @@ export function middleware(request: NextRequest) {
   const responseHeaders = new Headers();
   responseHeaders.set("Content-Security-Policy", cspHeader);
 
-  return NextResponse.next({
-    headers: responseHeaders,
+  // If the user is not logged in, `getExperimentationId` uses the value we
+  // set here to determine which experiments to show the user. We read it from
+  // the `experimentationId` cookie, and initialise that cookie if it's unset.
+  // (The reason we do this in middleware, is to ensure that every call to
+  // `getExperimentationId` results in the same ID.)
+  const existingExperimentationId = request.cookies.get("experimentationId");
+  const experimentationId =
+    existingExperimentationId?.value ?? `guest-${crypto.randomUUID()}`;
+  requestHeaders.set("x-experimentation-id", experimentationId);
+
+  // Check for the presence of the Nimbus preview mode param.
+  const nimbusPreviewMode = request.nextUrl.searchParams.get("nimbus_preview");
+  requestHeaders.set(
+    "x-nimbus-preview-mode",
+    nimbusPreviewMode === "true" ? "true" : "false",
+  );
+
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+
+  if (!existingExperimentationId) {
+    response.cookies.set({
+      name: "experimentationId",
+      value: experimentationId,
+      path: "/",
+    });
+  }
+
+  return response;
 }
 
 // See https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy#adding-a-nonce-with-middleware
@@ -66,7 +92,7 @@ function generateCspData() {
     } https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.ingest.sentry.io https://incoming.telemetry.mozilla.org https://api.stripe.com`,
     // `withSentryConfig` in next.config.js messes up the type, but we know that
     // it's a valid NextConfig with `images.remotePatterns` set:
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     `img-src 'self' https://*.google-analytics.com https://*.googletagmanager.com https://firefoxusercontent.com https://mozillausercontent.com https://monitor.cdn.mozilla.net ${nextConfig
       .images!.remotePatterns!.map(
         (pattern) =>

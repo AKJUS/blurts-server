@@ -7,6 +7,7 @@ fix-flow-nav-leaked-passwords = Razkrita gesla
 fix-flow-nav-security-recommendations = Varnostna priporočila
 guided-resolution-flow-exit = Nazaj na pregledno ploščo
 guided-resolution-flow-next-arrow = Pojdi na naslednji korak
+guided-resolution-flow-next-arrow-sub-step = Pojdi na naslednji zadetek
 guided-resolution-flow-step-navigation-label = Vodeni koraki
 
 # Celebration screens
@@ -32,7 +33,7 @@ fix-flow-celebration-high-risk-description-next-dashboard = Prišli ste do konca
 
 fix-flow-celebration-leaked-passwords-title = Vaša gesla so zdaj zaščitena!
 fix-flow-celebration-security-questions-title = Vaša varnostna vprašanja so zaščitena!
-fix-flow-celebration-leaked-passwords-description-next-security-questions = Zdaj pa preglejmo in posodobimo vaša izpostavljena varnostna vprašanja.
+fix-flow-celebration-leaked-passwords-description-next-security-questions = Zdaj pa preglejmo in spremenimo vaša varnostna vprašanja, ki so bila izpostavljena.
 fix-flow-celebration-leaked-passwords-description-next-security-recommendations = Nato vam bomo dali prilagojena varnostna priporočila glede na to, kateri vaši podatki so bili izpostavljeni.
 fix-flow-celebration-leaked-passwords-description-next-dashboard = Bravo! Prišli ste do konca svojih korakov. Na nadzorni plošči si lahko ogledate poljubne elemente dejanj in spremljate napredek.
 
@@ -83,10 +84,10 @@ high-risk-breach-credit-card-step-three = Preverite svoje račune za nepooblaš�
 # Bank Account Breaches
 
 high-risk-breach-bank-account-title = Vaš bančni račun je bil razkrit
-high-risk-breach-bank-account-description = Če ukrepate čim prej, si lahko zagotovite večjo pravno zaščito, ki vam bo pomagala povrniti morebitne izgube.
+high-risk-breach-bank-account-description = S čimprejšnjim ukrepanjem si lahko zagotovite večjo pravno zaščito, ki vam bo pomagala povrniti morebitne izgube.
 high-risk-breach-bank-account-step-one = Takoj obvestite svojo banko, da je bila številka vašega računa ogrožena.
 high-risk-breach-bank-account-step-two = Spremenite številko računa.
-high-risk-breach-bank-account-step-three = Preverite svoje račune za nepooblaščene bremenitve.
+high-risk-breach-bank-account-step-three = Preverite, ali so se vam na računu pojavile nepooblaščene bremenitve.
 
 # Social Security Number Breaches
 
@@ -107,11 +108,11 @@ ssn-modal-ok = V redu
 
 # PIN Breaches
 
-high-risk-breach-pin-title = Vaša PIN je bila razkrita
-high-risk-breach-pin-description = Če ukrepate čim prej, si lahko zagotovite večjo pravno zaščito, ki vam bo pomagala povrniti morebitne izgube.
-high-risk-breach-pin-step-one = Takoj obvestite svojo banko, da je bila vaša PIN-koda ogrožena.
-high-risk-breach-pin-step-two = Spremenite kodo PIN povsod, kjer ste uporabljali isto.
-high-risk-breach-pin-step-three = Preverite svoje račune za nepooblaščene bremenitve.
+high-risk-breach-pin-title = Vaša koda PIN je bila razkrita
+high-risk-breach-pin-description = S čimprejšnjim ukrepanjem si lahko zagotovite večjo pravno zaščito, ki vam bo pomagala povrniti morebitne izgube.
+high-risk-breach-pin-step-one = Takoj obvestite svojo banko, da je bila vaša koda PIN razkrita.
+high-risk-breach-pin-step-two = Povsod, kjer ste uporabljali isto kodo PIN, jo spremenite.
+high-risk-breach-pin-step-three = Preverite, ali so se vam na računu pojavile nepooblaščene bremenitve.
 
 # No high risk breaches found
 
@@ -120,9 +121,9 @@ high-risk-breach-none-title = Odlična novica, odkrili nismo nobene visoko tvega
 # $email_list is list of emails that the user is monitoring for breaches. E.g. john@yahoo.com, ali@gmail.com, sam@hotmail.com
 high-risk-breach-none-description = Na podlagi vašega e-poštnega naslova zaznavamo kraje podatkov z visokim tveganjem za { $email_list }.
 high-risk-breach-none-sub-description-part-one = Visoko tvegane kraje podatkov vključujejo:
-high-risk-breach-none-sub-description-ssn = Številka socialnega zavarovanja
-high-risk-breach-none-sub-description-bank-account = Podatki o bančnem računu
-high-risk-breach-none-sub-description-cc-number = Številke kreditnih kartic
+high-risk-breach-none-sub-description-ssn = številko socialnega zavarovanja
+high-risk-breach-none-sub-description-bank-account = podatke o bančnem računu
+high-risk-breach-none-sub-description-cc-number = številke kreditnih kartic
 high-risk-breach-none-sub-description-pin = kode PIN
 high-risk-breach-none-continue = Nadaljuj
 
@@ -161,7 +162,7 @@ security-recommendation-email-summary =
 security-recommendation-email-description = Tega žal ne morete popraviti. Vendar pa obstajajo koraki, s katerimi se lahko zaščitite.
 security-recommendation-email-step-one = Ne klikajte povezav v e-poštnih sporočilih neznanih pošiljateljev; če se zdi, da prihaja iz zaupanja vrednega vira, pokličite neposredno za potrditev
 security-recommendation-email-step-two = Bodite pozorni na <link_to_info>prevare z lažnim predstavljanjem</link_to_info>
-security-recommendation-email-step-three = Označi sumljivo pošto kot neželeno in blokiraj pošiljatelja
+security-recommendation-email-step-three = Označite sumljivo pošto kot neželeno in blokirajte pošiljatelja
 security-recommendation-email-step-four = Za zaščito e-pošte v prihodnje uporabite <link_to_info>e-poštne maske za { -brand-relay }</link_to_info>
 
 # IP security recommendation
@@ -217,7 +218,7 @@ leaked-security-questions-title = Vaša varnostna vprašanja so bila razkrita
 # An example of this string is Twitter on 13/09/18.
 leaked-security-questions-summary = Pojavili so se v kraji podatkov o { $breach_name } dne { $breach_date }.
 leaked-security-questions-description = Prevaranti jih lahko izkoristijo za dostop do vaših računov in vseh drugih strani, kjer ste uporabili ista varnostna vprašanja. Posodobite jih zdaj in zaščitite svoje račune.
-leaked-security-questions-steps-title = Tukaj je opisano, kaj morate storiti
+leaked-security-questions-steps-title = Kaj storiti
 leaked-security-questions-steps-subtitle = To zahteva dostop do vašega računa, zato ga boste morali popraviti ročno.
 # Variables
 # $breach_name is the name of the breach where the security questions were found.

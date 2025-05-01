@@ -3,15 +3,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { Meta, StoryObj } from "@storybook/react";
-import { OnerepScanResultRow, OnerepScanRow } from "knex/types/tables";
+import {
+  OnerepScanResultDataBrokerRow,
+  OnerepScanRow,
+} from "knex/types/tables";
 import { ViewDataBrokersView } from "./View";
 import {
+  createRandomAnnouncement,
   createRandomScanResult,
   createUserWithPremiumSubscription,
 } from "../../../../../../../../../../apiMocks/mockData";
-import { Shell } from "../../../../../../../Shell";
+import { Shell } from "../../../../../../../Shell/Shell";
 import { getL10n } from "../../../../../../../../../functions/l10n/storybookAndJest";
 import { LatestOnerepScanData } from "../../../../../../../../../../db/tables/onerep_scans";
+import { defaultExperimentData } from "../../../../../../../../../../telemetry/generated/nimbus/experiments";
+import { UserAnnouncementWithDetails } from "../../../../../../../../../../db/tables/user_announcements";
 
 const brokerOptions = {
   "no-scan": "No scan started",
@@ -41,19 +47,19 @@ const ViewWrapper = (props: ViewWrapperProps) => {
     onerep_scan_status: "in_progress",
   };
 
-  const mockedResolvedScanResults: OnerepScanResultRow[] = [
+  const mockedResolvedScanResults: OnerepScanResultDataBrokerRow[] = [
     createRandomScanResult({ status: "removed" }),
     createRandomScanResult({ status: "waiting_for_verification" }),
     createRandomScanResult({ status: "optout_in_progress" }),
   ];
 
-  const mockedFewUnresolvedScanResults: OnerepScanResultRow[] = [
+  const mockedFewUnresolvedScanResults: OnerepScanResultDataBrokerRow[] = [
     ...mockedResolvedScanResults,
     createRandomScanResult({ status: "new", manually_resolved: false }),
     createRandomScanResult({ status: "new", manually_resolved: true }),
   ];
 
-  const mockedManyUnresolvedScanResults: OnerepScanResultRow[] = [
+  const mockedManyUnresolvedScanResults: OnerepScanResultDataBrokerRow[] = [
     ...Array(42),
   ].map(() =>
     createRandomScanResult({ status: "new", manually_resolved: false }),
@@ -93,13 +99,21 @@ const ViewWrapper = (props: ViewWrapperProps) => {
   };
   const l10n = getL10n();
 
+  const mockedAnnouncements: UserAnnouncementWithDetails[] = [
+    createRandomAnnouncement({ audience: "has_run_scan" }),
+    createRandomAnnouncement({ audience: "has_run_scan" }),
+    createRandomAnnouncement({ audience: "has_run_scan" }),
+  ];
+
   return (
     <Shell
       l10n={l10n}
       session={mockedSession}
       nonce=""
       countryCode="us"
-      howItWorksFlagEnabled
+      enabledFeatureFlags={[]}
+      experimentData={defaultExperimentData["Features"]}
+      announcements={mockedAnnouncements}
     >
       <ViewDataBrokersView
         data={{
@@ -110,6 +124,7 @@ const ViewWrapper = (props: ViewWrapperProps) => {
         }}
         l10n={l10n}
         subscriberEmails={[]}
+        enabledFeatureFlags={[]}
       />
     </Shell>
   );

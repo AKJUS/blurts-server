@@ -4,10 +4,11 @@
 
 import type { Meta, StoryObj } from "@storybook/react";
 import {
+  createRandomAnnouncement,
   createRandomBreach,
   createUserWithPremiumSubscription,
 } from "../../../../../../../../../../apiMocks/mockData";
-import { Shell } from "../../../../../../../Shell";
+import { Shell } from "../../../../../../../Shell/Shell";
 import { getL10n } from "../../../../../../../../../functions/l10n/storybookAndJest";
 import { HighRiskBreachLayout } from "../HighRiskBreachLayout";
 import {
@@ -17,6 +18,8 @@ import {
 import { BreachDataTypes } from "../../../../../../../../../functions/universal/breach";
 import { StepDeterminationData } from "../../../../../../../../../functions/server/getRelevantGuidedSteps";
 import { OnerepScanRow } from "knex/types/tables";
+import { defaultExperimentData } from "../../../../../../../../../../telemetry/generated/nimbus/experiments";
+import { UserAnnouncementWithDetails } from "../../../../../../../../../../db/tables/user_announcements";
 
 const user = createUserWithPremiumSubscription();
 
@@ -101,19 +104,28 @@ const HighRiskBreachWrapper = (props: {
             user: mockedSession.user,
           };
 
+  const mockedAnnouncements: UserAnnouncementWithDetails[] = [
+    createRandomAnnouncement(),
+    createRandomAnnouncement(),
+    createRandomAnnouncement(),
+  ];
+
   return (
     <Shell
       l10n={getL10n()}
       session={mockedSession}
       nonce=""
       countryCode={data.countryCode}
-      howItWorksFlagEnabled
+      enabledFeatureFlags={[]}
+      experimentData={defaultExperimentData["Features"]}
+      announcements={mockedAnnouncements}
     >
       <HighRiskBreachLayout
         subscriberEmails={[]}
         type={props.type}
         data={data}
         isEligibleForPremium={true}
+        enabledFeatureFlags={[]}
       />
     </Shell>
   );

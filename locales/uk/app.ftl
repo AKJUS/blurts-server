@@ -63,7 +63,6 @@
 
 ##
 
-error-could-not-add-email = Не вдалося додати адресу електронної пошти до бази даних.
 error-not-subscribed = Ця адреса електронної пошти не підписана на { -product-name }.
 error-hibp-throttled = Надто багато з'єднань з { -brand-HIBP }.
 error-hibp-connect = Помилка з'єднання з { -brand-HIBP }.
@@ -74,8 +73,6 @@ user-add-verification-email-just-sent = Наразі не можна повто�
 user-add-unknown-error = Під час додавання іншої адреси електронної пошти сталася помилка. Повторіть спробу пізніше.
 user-delete-unknown-error = Під час вилучення електронної адреси сталася помилка. Повторіть спробу пізніше.
 user-verify-token-error = Необхідний токен підтвердження.
-user-unsubscribe-token-error = Для скасування підписки необхідний токен.
-user-unsubscribe-token-email-error = Для скасування підписки необхідний токен і emailHash.
 # compromised-data = the kind of user data exposed to hackers in data breach.
 compromised-data = Скомпрометовані дані:
 # Breach data provided by Have I Been Pwned.
@@ -86,8 +83,6 @@ show-all = Показати все
 sign-out = Вийти
 # Manage Firefox Account, link to page where account holders can change their account settings.
 manage-fxa = Керувати { -brand-fxa(case: "abl") }
-# Link title
-frequently-asked-questions = Часті запитання
 # Link title
 preferences = Налаштування
 # Link title
@@ -134,7 +129,6 @@ breach-summary = Підсумок витоку даних
 
 ##
 
-breach-alert-subject = { -product-name } знайшов вашу адресу е-пошти в новому витоці даних
 # This string is displayed under a large numeral that indicates the total number
 # of data breaches that exposed a user’s password. Don’t add $passwords to
 # your localization, because it would result in the number showing twice.
@@ -270,7 +264,7 @@ mozilla = { -brand-mozilla }
 terms-of-service = Умови надання послуг
 privacy-notice = Положення про приватність
 github = { -brand-github }
-footer-nav-all-breaches = Усі витоки
+footer-nav-recent-breaches = Нещодавні витоки даних
 footer-external-link-faq-label = Поширені запитання
 footer-external-link-faq-tooltip = Поширені запитання
 
@@ -287,7 +281,7 @@ error-page-error-other-title = { $errorCode } Щось пішло не так
 
 ## Breach overview page
 
-all-breaches-headline-2 = Усі витоки, виявлені { -brand-fx-monitor }
+all-breaches-headline-3 = База даних витоків
 all-breaches-lead = Ми відстежуємо всі відомі витоки даних, щоб з’ясувати, чи була скомпрометована ваша особиста інформація. Ось повний список усіх витоків, про які було повідомлено з 2007 року.
 search-breaches = Пошук витоків
 # the kind of user data exposed to hackers in data breach.

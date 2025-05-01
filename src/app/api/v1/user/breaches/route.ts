@@ -12,37 +12,12 @@ import {
   getSubscriberByFxaUid,
   setBreachResolution,
 } from "../../../../../db/tables/subscribers";
-import appConstants from "../../../../../appConstants";
 import { HibpBreachDataTypes } from "../../../../functions/universal/breach";
 
 export interface BreachResolutionRequest {
   affectedEmail: string;
   breachId: number;
   resolutionsChecked: Array<HibpBreachDataTypes[keyof HibpBreachDataTypes]>;
-}
-
-// Get breaches data
-export async function GET(req: NextRequest) {
-  const token = await getToken({ req });
-  if (typeof token?.subscriber?.fxa_uid === "string") {
-    // Signed in
-    try {
-      const subscriber = await getSubscriberByFxaUid(token.subscriber?.fxa_uid);
-      const allBreaches = await getBreaches();
-      const breaches = await getAllEmailsAndBreaches(subscriber, allBreaches);
-      const successResponse = {
-        success: true,
-        breaches,
-      };
-      return NextResponse.json(successResponse);
-    } catch (e) {
-      logger.error(e);
-      return NextResponse.json({ success: false }, { status: 500 });
-    }
-  } else {
-    // Not Signed in, redirect to home
-    return NextResponse.redirect(appConstants.SERVER_URL, 301);
-  }
 }
 
 export async function PUT(req: NextRequest) {
@@ -159,7 +134,6 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false }, { status: 500 });
     }
   } else {
-    // Not Signed in, redirect to home
-    return NextResponse.redirect(appConstants.SERVER_URL);
+    return NextResponse.json({ success: false }, { status: 401 });
   }
 }

@@ -27,12 +27,14 @@ import {
   BreachBulkResolutionRequest,
   SecurityRecommendationDataTypes,
 } from "../../../../../../../../functions/universal/breach";
+import { FeatureFlagName } from "../../../../../../../../../db/tables/featureFlags";
 
 export interface SecurityRecommendationsLayoutProps {
   type: SecurityRecommendationTypes;
   subscriberEmails: string[];
   data: StepDeterminationData;
   isEligibleForPremium: boolean;
+  enabledFeatureFlags: FeatureFlagName[];
 }
 
 export function SecurityRecommendationsLayout(
@@ -56,7 +58,11 @@ export function SecurityRecommendationsLayout(
     props.subscriberEmails,
   );
 
-  const nextStep = getNextGuidedStep(props.data, stepMap[props.type]);
+  const nextStep = getNextGuidedStep(
+    props.data,
+    props.enabledFeatureFlags,
+    stepMap[props.type],
+  );
   const pageData = getSecurityRecommendationsByType({
     dataType: props.type,
     breaches: guidedExperienceBreaches,
@@ -131,7 +137,7 @@ export function SecurityRecommendationsLayout(
       // `revalidatePath("/user/dashboard")` there, but the API doesn't appear
       // to necessarily share a cache with the client.
       router.refresh();
-    } catch (_error) {
+    } catch {
       // TODO: MNTOR-2563: Capture client error with @next/sentry
       setIsResolving(false);
     }
@@ -146,6 +152,7 @@ export function SecurityRecommendationsLayout(
       currentSection="security-recommendations"
       hideProgressIndicator={isStepDone}
       showConfetti={isStepDone}
+      enabledFeatureFlags={props.enabledFeatureFlags}
     >
       <ResolutionContainer
         label={
@@ -157,6 +164,7 @@ export function SecurityRecommendationsLayout(
         title={title}
         illustration={illustration}
         isPremiumUser={hasPremium(props.data.user)}
+        enabledFeatureFlags={props.enabledFeatureFlags}
         cta={
           !isStepDone && (
             <Button

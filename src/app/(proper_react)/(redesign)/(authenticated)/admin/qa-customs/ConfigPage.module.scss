@@ -1,0 +1,214 @@
+@use "../../../../../tokens";
+
+.wrapper {
+  display: grid;
+  grid-template-rows: 120px min-content;
+  gap: tokens.$spacing-md;
+  height: 100%;
+  padding: tokens.$layout-sm;
+  background-color: tokens.$color-grey-05;
+  align-items: center;
+  justify-content: center;
+}
+
+.wrapperHibp {
+  grid-template-rows: 120px min-content 100px;
+  justify-content: center;
+}
+
+.header {
+  font: tokens.$text-title-xs;
+  font-weight: normal;
+  margin: auto;
+  width: 100%;
+  b {
+    font-weight: bold;
+  }
+  text-align: center;
+}
+
+.formAndListWrapper {
+  gap: tokens.$spacing-md;
+  margin-top: tokens.$spacing-lg;
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1fr;
+  justify-content: center;
+}
+
+.hibpFormAndListWrapper {
+  grid-template-columns: 1fr 1fr;
+}
+
+.formWrapper {
+  display: grid;
+  grid-template-rows: 50px 4fr 100px;
+  justify-content: center;
+}
+
+.h2 {
+  text-align: center;
+}
+
+.allBreachesWrapper {
+  display: grid;
+  grid-template-rows: 50px 4fr;
+  justify-content: center;
+}
+
+.listContainer {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$spacing-sm;
+}
+
+.searchBox {
+  background-color: white;
+  border: 1px solid rgb(139, 139, 139);
+  border-radius: 3px;
+  height: 240px;
+  width: 100%;
+}
+
+.buttonsWrapper {
+  height: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.buttonsStandalone {
+  height: 100px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.hibpSelectedBoxWrapper {
+  width: 100%;
+  grid-template-columns: 100%;
+}
+
+.button {
+  display: block;
+  margin: auto;
+  max-height: 100px;
+  max-width: 100px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.buttonUnderList {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.buttonsHibp {
+  margin: 10px;
+  justify-self: center;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.error {
+  border-color: red; /* Example: Highlight border in red for error */
+  animation: shake 0.5s ease-in-out; /* Example animation */
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$spacing-sm;
+  align-items: center;
+  width: min-content;
+
+  .userPicker {
+    flex: 1 0 auto;
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: tokens.$spacing-md;
+    min-height: tokens.$layout-md;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: tokens.$spacing-sm;
+      min-width: 50%;
+      width: 350px;
+    }
+
+    input {
+      padding: tokens.$spacing-sm;
+      font: tokens.$text-body-md;
+      transition: border-color 0.3s ease;
+    }
+  }
+}
+
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.listItem:hover {
+  background-color: #f0f0f0; /* Light grey background on hover */
+}
+
+.allBreachesItem:hover {
+  background-color: #f0f0f0; /* Light grey background on hover */
+  cursor: pointer; /* Change cursor to indicate clickable item */
+}
+
+.selectedBox {
+  margin: 0;
+}
+
+.breachName {
+  color: black;
+  margin-left: 10px;
+}
+
+.selected {
+  background-color: red;
+}
+
+.unselected {
+  background-color: white;
+}
+
+.configContainer {
+  display: flex;
+  background-color: tokens.$color-grey-05;
+}
+
+.configLeft {
+  flex: 1;
+  padding: 20px; /* Optional: add some padding */
+}
+
+.configRight {
+  flex: 1;
+  padding: 20px; /* Optional: add some padding */
+}
+
+.buttonContainer {
+  display: flex;
+}

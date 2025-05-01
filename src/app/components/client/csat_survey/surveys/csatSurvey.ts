@@ -9,6 +9,8 @@ import { AutomaticRemovalVariation } from "./automaticRemovalCsatSurvey";
 import { ExperimentData } from "../../../../../telemetry/generated/nimbus/experiments";
 import { GleanMetricMap } from "../../../../../telemetry/generated/_map";
 
+// The variable `surveyResponses` is used as a type reference.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const surveyResponses = [
   "very-dissatisfied",
   "dissatisfied",
@@ -26,12 +28,16 @@ export type SurveyLinks = Record<SurveyResponse, string>;
 type RequiredExperimentStatus = "enabled" | "disabled";
 
 type RequiredExperiment = {
-  id: keyof ExperimentData;
+  id: keyof ExperimentData["Features"];
   statusAllowList: RequiredExperimentStatus[];
 };
 
 export type SurveyData = {
-  id: "csat_survey" | "last_scan_date" | "petition_banner";
+  id:
+    | "csat_survey"
+    | "last_scan_date"
+    | "petition_banner"
+    | "removal_time_estimates_banner";
   requiredExperiments: RequiredExperiment[];
   variations: Survey[];
 };
@@ -46,13 +52,13 @@ export type Survey = AutomaticRemovalVariation | LatestScanDateVariation;
 
 export type CsatSurveyProps = {
   activeTab: TabType;
-  experimentData: ExperimentData;
+  experimentData: ExperimentData["Features"];
   user: Session["user"];
 };
 
 export type RelevantSurveyWithMetric = Survey & {
   localDismissalId: string;
-  metricKeys: GleanMetricMap["csatSurvey"]["click"];
+  metricKeys: GleanMetricMap["csatSurvey"]["click" | "view"];
 };
 
 export function getRelevantSurveys({

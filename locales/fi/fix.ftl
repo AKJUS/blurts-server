@@ -5,9 +5,9 @@
 fix-flow-nav-high-risk-data-breaches = Suuren riskin tietomurrot
 fix-flow-nav-leaked-passwords = Vuotaneet salasanat
 fix-flow-nav-security-recommendations = Turvallisuussuositukset
-
 guided-resolution-flow-exit = Palaa hallintapaneeliin
 guided-resolution-flow-next-arrow = Siirry seuraavaan vaiheeseen
+guided-resolution-flow-next-arrow-sub-step = Siirry seuraavaan tulokseen
 guided-resolution-flow-step-navigation-label = Ohjatut vaiheet
 
 # Celebration screens
@@ -117,6 +117,14 @@ security-recommendation-steps-cta-label = Selvä!
 # Phone security recommendation
 
 security-recommendation-phone-title = Suojaa puhelinnumerosi
+# $num_breaches is the number of breaches where the phone number was found.
+security-recommendation-phone-summary =
+    { $num_breaches ->
+        [one] Puhelinnumerosi paljastui { $num_breaches } tietovuodossa:
+       *[other] Puhelinnumerosi paljastui { $num_breaches } tietovuodossa:
+    }
+security-recommendation-phone-description = Valitettavasti tätä asiaa ei voi muuttaa. On olemassa toimenpiteitä, joiden avulla voit varmistaa, että pysyt turvassa.
+security-recommendation-phone-step-one = Estä ns. spamminumerot estääksesi mahdolliset roskapuhelut
 security-recommendation-phone-step-two = Älä napsauta tuntemattomien lähettäjien tekstiviesteissä olevia linkkejä. Jos viesti vaikuttaa olevan luotettavasta lähteestä, soita lähettäjälle vahvistaaksesi
 
 # Email security recommendation
@@ -143,6 +151,8 @@ security-recommendation-ip-summary =
         [one] IP-osoitteesi paljastui { $num_breaches } tietovuodon yhteydessä:
        *[other] IP-osoitteesi paljastui { $num_breaches } tietovuodon yhteydessä:
     }
+security-recommendation-ip-description = IP-osoitteesi osoittaa sijaintisi ja Internet-palveluntarjoajasi. Hakkerit voivat käyttää näitä tietoja paikantaakseen sinut tai yrittääkseen muodostaa yhteyden laitteihisi.
+security-recommendation-ip-step-one = Käytä VPN:ää (kuten <link_to_info>{ -brand-mozilla-vpn }</link_to_info>) piilottaaksesi todellisen IP-osoitteesi ja käyttääksesi Internetiä yksityisesti.
 
 # Leaked Passwords
 
@@ -174,6 +184,12 @@ leaked-passwords-estimated-time =
 # Leaked Security Questions
 
 leaked-security-questions-title = Turvakysymyksesi paljastettiin
+# Variables
+# $breach_name is the name of the breach where the leaked security questions were found.
+# $breach_date is the date when the breach occurred.
+# An example of this string is Twitter on 13/09/18.
+leaked-security-questions-summary = Ne paljastuivat tietovuodossa { $breach_name } { $breach_date }.
+leaked-security-questions-description = Huijarit voivat käyttää näitä päästäkseen tileillesi ja muille sivustoille, joilla olet käyttänyt samoja turvakysymyksiä. Päivitä kysymykset välittömästi suojataksesi tilisi.
 leaked-security-questions-steps-title = Tämän kaiken voit tehdä
 leaked-security-questions-steps-subtitle = Tämä vaatii pääsyn tiliisi, joten sinun on korjattava se manuaalisesti.
 # Variables

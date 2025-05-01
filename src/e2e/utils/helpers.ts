@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { expect, request, Page, Locator, test } from "@playwright/test";
-import { InternalServerError } from "../../utils/error.js";
 import { LandingPage } from "../pages/landingPage.js";
 import { AuthPage } from "../pages/authPage.js";
 
@@ -31,7 +30,7 @@ export const defaultScreenshotOpts: Partial<DefaultScreenshotOpts> = {
 export const ENV_URLS = {
   local: "http://localhost:6060",
   heroku: "https://fx-breach-alerts.herokuapp.com",
-  stage: "https://stage.firefoxmonitor.nonprod.cloudops.mozgcp.net",
+  stage: "https://monitor-stage.allizom.org",
   prod: "https://monitor.mozilla.org",
 };
 
@@ -76,24 +75,33 @@ export const waitForUrlOrTimeout = async (
 export const getVerificationCode = async (
   testEmail: string,
   page: Page,
-  attempts = 10,
-): Promise<string> => {
-  if (attempts === 0) {
-    throw new InternalServerError("Unable to retrieve restmail data");
-  }
+  attemptsRemaining = 5,
+): Promise<string | undefined> => {
+  try {
+    const context = await request.newContext();
+    const restmailUrl = `http://restmail.net/mail/${testEmail}`;
+    const res = await context.get(restmailUrl, {
+      failOnStatusCode: false,
+    });
+    const resJson = await res.json();
 
-  const context = await request.newContext();
-  const res = await context.get(`http://restmail.net/mail/${testEmail}`, {
-    failOnStatusCode: false,
-  });
-  const resJson = await res.json();
-  if (resJson.length) {
+    if (resJson.length === 0) {
+      throw new Error("Data is not available on restmail, yet");
+    }
+
     const verificationCode = resJson[0].headers["x-verify-short-code"];
     return verificationCode as string;
-  }
+  } catch (error) {
+    console.error("Error fetching verification code from restmail", error);
 
-  await page.waitForTimeout(1000);
-  return getVerificationCode(testEmail, page, attempts - 1);
+    const retryTimeout = (5 - attemptsRemaining) * 1500;
+    console.log(`Trying again in ${retryTimeout}ms`);
+    if (attemptsRemaining === 0) {
+      throw new Error("Unable to retrieve restmail data");
+    }
+    await page.waitForTimeout(retryTimeout);
+    return getVerificationCode(testEmail, page, attemptsRemaining - 1);
+  }
 };
 
 const enterYourEmail = async (page: Page) => {
@@ -159,7 +167,6 @@ export const checkAuthState = async (page: Page) => {
  * @param text
  */
 export function removeUnicodeChars(text: string): string {
-  // eslint-disable-next-line no-control-regex
   return text.replace(/[^\x00-\x7F]/g, "");
 }
 
@@ -170,7 +177,9 @@ export const clickOnATagCheckDomain = async (
   page: Page,
 ) => {
   if (typeof host === "string")
-    host = new RegExp(escapeRegExp(host.replace(/^(https?:\/\/)/, "")));
+    host = new RegExp(
+      escapeRegExp(host.replace(/^(https?:\/\/)/, "").replace(/:\d+$/, "")),
+    );
   if (typeof path === "string") path = new RegExp(".*" + path + ".*");
 
   const href = await aTag.getAttribute("href");
@@ -208,12 +217,10 @@ export const forceLoginAs = async (
   await page.context().clearCookies();
   await landingPage.open();
   await landingPage.goToSignIn();
-  let visible = true;
-  try {
-    await expect(authPage.useDifferentEmailButton).toBeVisible();
-  } catch {
-    visible = false;
-  }
+  await page
+    .locator("//input[@type='password'] | //div/input[@type='email']")
+    .waitFor({ state: "visible" });
+  const visible = await authPage.useDifferentEmailButton.isVisible();
   if (visible) {
     await authPage.useDifferentEmailButton.click();
     await page.waitForURL(/^(?!.*signin).*/);
@@ -221,4 +228,24 @@ export const forceLoginAs = async (
   await authPage.signIn(email, password);
   await page.waitForURL("**/user/dashboard");
   await expect(page).toHaveURL(/.*\/user\/dashboard.*/);
+};
+
+export async function emailInputShouldExist(landingPage: LandingPage) {
+  return 0 < (await landingPage.emailInputPrompt.count());
+}
+
+export const resetTestData = async (
+  page: Page,
+  hibp: boolean,
+  onerep: boolean,
+) => {
+  const baseUrl = process.env.SERVER_URL!;
+  const param1 = `${hibp ? "hibp=true" : ""}`;
+  const param2 = `${onerep ? "onerep=true" : ""}`;
+  let delim = "";
+  if (param1 && param2) delim = "&";
+  const params = param1 + delim + param2;
+  const completeUrl = baseUrl + "/api/mock/resetTestData?" + params;
+  const res = await page.request.get(completeUrl);
+  expect(res.ok()).toBeTruthy();
 };

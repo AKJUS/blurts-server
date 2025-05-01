@@ -12,12 +12,13 @@ import { ModalOverlay } from "./dialog/ModalOverlay";
 import { Dialog } from "./dialog/Dialog";
 import { Button } from "../client/Button";
 import { CONST_ONEREP_DATA_BROKER_COUNT } from "../../../constants";
-import { StatusPill } from "../server/StatusPill";
+import { StatusPill, StatusPillTypeMap } from "../server/StatusPill";
 import { FeatureFlagName } from "../../../db/tables/featureFlags";
 
 type ExposuresFilterTypeExplainerProps = {
   explainerDialogState: OverlayTriggerState;
   explainerDialogProps: OverlayTriggerAria;
+  enabledFeatureFlags: FeatureFlagName[];
 };
 
 export const ExposuresFilterTypeExplainer = (
@@ -54,8 +55,7 @@ export const ExposuresFilterTypeExplainer = (
             <li>
               {l10n.getFragment("modal-exposure-type-data-broker-part-one", {
                 elems: { b: <strong /> },
-              })}
-              <br />
+              })}{" "}
               {l10n.getString("modal-exposure-type-data-broker-part-two")}
             </li>
           </ol>
@@ -64,6 +64,41 @@ export const ExposuresFilterTypeExplainer = (
             onPress={() => props.explainerDialogState.close()}
           >
             {l10n.getString("modal-cta-ok")}
+          </Button>
+        </div>
+      </Dialog>
+    </ModalOverlay>
+  );
+};
+
+type ExposuresFilterRemovalTimeExplainerProps = {
+  explainerDialogState: OverlayTriggerState;
+  explainerDialogProps: OverlayTriggerAria;
+};
+
+export const ExposuresFilterRemovalTimeExplainer = (
+  props: ExposuresFilterRemovalTimeExplainerProps,
+) => {
+  const l10n = useL10n();
+
+  return (
+    <ModalOverlay
+      state={props.explainerDialogState}
+      {...props.explainerDialogProps.overlayProps}
+      isDismissable
+    >
+      <Dialog
+        title={l10n.getString("modal-exposure-removal-time-title")}
+        onDismiss={() => props.explainerDialogState.close()}
+      >
+        <div className={styles.modalBodyContent}>
+          <p>{l10n.getString("modal-exposure-removal-time-text")}</p>
+          <br />
+          <Button
+            variant="primary"
+            onPress={() => props.explainerDialogState.close()}
+          >
+            {l10n.getString("modal-exposure-removal-time-button-label")}
           </Button>
         </div>
       </Dialog>
@@ -103,28 +138,28 @@ export const ExposuresFilterStatusExplainer = (
                   "AdditionalRemovalStatuses",
                 ) && (
                   <li className={styles.statusListItem}>
-                    <StatusPill type="requestedRemoval" />
+                    <StatusPill type={StatusPillTypeMap.RequestedRemoval} />
                     {l10n.getString(
                       "modal-exposure-indicator-requested-removal",
                     )}
                   </li>
                 )}
                 <li className={styles.statusListItem}>
-                  <StatusPill type="inProgress" />
+                  <StatusPill type={StatusPillTypeMap.InProgress} />
                   {l10n.getString("modal-exposure-indicator-in-progress")}
                 </li>
                 <li className={styles.statusListItem}>
-                  <StatusPill type="removed" />
+                  <StatusPill type={StatusPillTypeMap.Removed} />
                   {l10n.getString("modal-exposure-indicator-removed")}
                 </li>
               </>
             )}
             <li className={styles.statusListItem}>
-              <StatusPill type="fixed" />
+              <StatusPill type={StatusPillTypeMap.Fixed} />
               {l10n.getString("modal-exposure-indicator-fixed")}
             </li>
             <li className={styles.statusListItem}>
-              <StatusPill type="actionNeeded" />
+              <StatusPill type={StatusPillTypeMap.ActionNeeded} />
               {l10n.getString("modal-exposure-indicator-action-needed")}
             </li>
           </ul>

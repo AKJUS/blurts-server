@@ -20,6 +20,11 @@ import Meta, {
   DashboardNonUsNoBreaches,
   DashboardNonUsUnresolvedBreaches,
   DashboardNonUsResolvedBreaches,
+} from "./DashboardNonUSUsers.stories";
+import { useTelemetry } from "../../../../../../hooks/useTelemetry";
+import { deleteAllCookies } from "../../../../../../functions/client/deleteAllCookies";
+import { defaultExperimentData } from "../../../../../../../telemetry/generated/nimbus/experiments";
+import {
   DashboardUsNoPremiumNoScanNoBreaches,
   DashboardUsNoPremiumNoScanUnresolvedBreaches,
   DashboardUsNoPremiumNoScanResolvedBreaches,
@@ -33,6 +38,11 @@ import Meta, {
   DashboardUsNoPremiumResolvedScanNoBreaches,
   DashboardUsNoPremiumResolvedScanUnresolvedBreaches,
   DashboardUsNoPremiumResolvedScanResolvedBreaches,
+  DashboardUsNoPremiumScanInProgressNoBreaches,
+  DashboardUsNoPremiumScanInProgressUnresolvedBreaches,
+  DashboardUsNoPremiumScanInProgressResolvedBreaches,
+} from "./DashboardUSUsers.stories";
+import {
   DashboardUsPremiumEmptyScanNoBreaches,
   DashboardUsPremiumEmptyScanUnresolvedBreaches,
   DashboardUsPremiumEmptyScanResolvedBreaches,
@@ -42,22 +52,19 @@ import Meta, {
   DashboardUsPremiumResolvedScanNoBreaches,
   DashboardUsPremiumResolvedScanUnresolvedBreaches,
   DashboardUsPremiumResolvedScanResolvedBreaches,
-  DashboardUsNoPremiumScanInProgressNoBreaches,
-  DashboardUsNoPremiumScanInProgressUnresolvedBreaches,
-  DashboardUsNoPremiumScanInProgressResolvedBreaches,
-  DashboardUsPremiumScanInProgressNoBreaches,
-  DashboardUsPremiumScanInProgressUnresolvedBreaches,
-  DashboardUsPremiumScanInProgressResolvedBreaches,
   DashboardInvalidPremiumUserNoScanResolvedBreaches,
   DashboardUsPremiumManuallyResolvedScansNoBreaches,
-} from "./Dashboard.stories";
-import { useTelemetry } from "../../../../../../hooks/useTelemetry";
-import { deleteAllCookies } from "../../../../../../functions/client/deleteAllCookies";
-import { defaultExperimentData } from "../../../../../../../telemetry/generated/nimbus/experiments";
+  DashboardUsPremiumScanInProgressNoBreaches,
+  DashboardUsPremiumScanInProgressResolvedBreaches,
+  DashboardUsPremiumScanInProgressUnresolvedBreaches,
+} from "./DashboardPlusUsers.stories";
 
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
   usePathname: jest.fn(),
+  useSearchParams: () => ({
+    get: jest.fn(),
+  }),
 }));
 jest.mock("../../../../../../hooks/useTelemetry");
 
@@ -80,273 +87,13 @@ afterEach(() => {
   deleteAllCookies();
 });
 
-describe("axe accessibility test suite", () => {
-  it("passes the axe accessibility test suite for DashboardNonUsNoBreaches", async () => {
-    const ComposedDashboard = composeStory(DashboardNonUsNoBreaches, Meta);
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardNonUsUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardNonUsUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardNonUsResolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardNonUsResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumNoScanNoBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumNoScanNoBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumNoScanUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumNoScanUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumNoScanResolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumNoScanResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumEmptyScanNoBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumEmptyScanNoBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumEmptyScanUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumEmptyScanUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumEmptyScanResolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumEmptyScanResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumUnresolvedScanNoBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumUnresolvedScanNoBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumUnresolvedScanUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumUnresolvedScanUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumUnresolvedScanResolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumUnresolvedScanResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumResolvedScanNoBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumResolvedScanNoBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumResolvedScanUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumResolvedScanUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsNoPremiumResolvedScanResolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumResolvedScanResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumEmptyScanNoBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumEmptyScanNoBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumEmptyScanUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumEmptyScanUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumEmptyScanResolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumEmptyScanResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumUnresolvedScanNoBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumUnresolvedScanNoBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumUnresolvedScanUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumUnresolvedScanUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumUnresolvedScanResolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumUnresolvedScanResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumResolvedScanNoBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumResolvedScanNoBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumResolvedScanUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumResolvedScanUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumResolvedScanResolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumResolvedScanResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumScanEmptyInProgressNoBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumScanInProgressNoBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumScanEmptyInProgressUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumScanInProgressUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumScanUnresolvedInProgressNoBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsNoPremiumScanInProgressResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumScanUnresolvedInProgressUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumScanInProgressNoBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumScanInProgressUnresolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumScanInProgressUnresolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("passes the axe accessibility test suite for DashboardUsPremiumScanInProgressResolvedBreaches", async () => {
-    const ComposedDashboard = composeStory(
-      DashboardUsPremiumScanInProgressResolvedBreaches,
-      Meta,
-    );
-    const { container } = render(<ComposedDashboard />);
-    expect(await axe(container)).toHaveNoViolations();
-  });
+it("passes the axe accessibility test suite", async () => {
+  const ComposedDashboard = composeStory(
+    DashboardUsPremiumUnresolvedScanUnresolvedBreaches,
+    Meta,
+  );
+  const { container } = render(<ComposedDashboard />);
+  expect(await axe(container)).toHaveNoViolations();
 });
 
 it("shows the 'Start a free scan' CTA to free US-based users who haven't performed a scan yet", () => {
@@ -525,147 +272,6 @@ it("shows consistent counts in the chart on the fixed tab", async () => {
     `This chart shows the total exposures that are fixed (⁨${fixedCounter}⁩ out of ⁨81⁩)`,
   );
   expect(chartCaption).toBeInTheDocument();
-});
-
-it("shows US users with Premium the upsell badge", () => {
-  const ComposedDashboard = composeStory(
-    DashboardUsPremiumEmptyScanNoBreaches,
-    Meta,
-  );
-  render(<ComposedDashboard />);
-
-  // We show an upsell badge on desktop in the toolbar and in the mobile menu
-  const upsellBadges = screen.queryAllByRole("button", {
-    name: "Automatic data removal: On",
-  });
-  expect(upsellBadges.length).toBe(2);
-});
-
-it("shows US users without Premium the upsell button", () => {
-  const ComposedDashboard = composeStory(
-    DashboardUsNoPremiumEmptyScanNoBreaches,
-    Meta,
-  );
-  render(<ComposedDashboard />);
-
-  // We show a CTA on desktop in the toolbar and in the mobile menu
-  const premiumCtas = screen.queryAllByRole("button", {
-    name: "Automatic data removal: Off",
-  });
-  expect(premiumCtas.length).toBe(2);
-});
-
-it("does not show non-US users the upsell badge", () => {
-  const ComposedDashboard = composeStory(DashboardNonUsNoBreaches, Meta);
-  render(<ComposedDashboard />);
-
-  // We show an upsell badge on desktop in the toolbar and in the mobile menu
-  const upsellBadges = screen.queryAllByRole("button", {
-    name: "Automatic data removal: On",
-  });
-  expect(upsellBadges.length).toBe(0);
-});
-
-it("does not show non-US users the upsell button", () => {
-  const ComposedDashboard = composeStory(DashboardNonUsNoBreaches, Meta);
-  render(<ComposedDashboard />);
-
-  // We show a CTA on desktop in the toolbar and in the mobile menu
-  const premiumCtas = screen.queryAllByRole("button", {
-    name: "Automatic data removal: Off",
-  });
-  expect(premiumCtas.length).toBe(0);
-});
-
-it("opens and closes the premium upsell dialog via the Premium upsell badge)", async () => {
-  const user = userEvent.setup();
-  const ComposedDashboard = composeStory(
-    DashboardUsNoPremiumNoScanNoBreaches,
-    Meta,
-  );
-  render(<ComposedDashboard />);
-
-  // We show a CTA on desktop in the toolbar and in the mobile menu
-  const premiumCtas = screen.queryAllByRole("button", {
-    name: "Automatic data removal: Off",
-  });
-  expect(premiumCtas.length).toBe(2);
-
-  // Shows the modal for the desktop layout
-  await user.click(premiumCtas[0]);
-  expect(
-    screen.getByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
-  ).toBeInTheDocument();
-  const closeButtonIcon1 = screen.getByLabelText("Close modal");
-  await user.click(closeButtonIcon1.parentElement as HTMLElement);
-  expect(
-    screen.queryByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
-  ).not.toBeInTheDocument();
-
-  // Shows the modal for the mobile layout
-  await user.click(premiumCtas[1]);
-  expect(
-    screen.getByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
-  ).toBeInTheDocument();
-  const closeButtonIcon2 = screen.getByLabelText("Close modal");
-  await user.click(closeButtonIcon2.parentElement as HTMLElement);
-  expect(
-    screen.queryByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
-  ).not.toBeInTheDocument();
-});
-
-it("opens and closes the premium upsell dialog via the Premium upsell button", async () => {
-  const user = userEvent.setup();
-  const ComposedDashboard = composeStory(
-    DashboardUsNoPremiumEmptyScanResolvedBreaches,
-    Meta,
-  );
-  render(<ComposedDashboard />);
-
-  const premiumCta = screen.getByRole("button", {
-    name: "Get continuous protection",
-  });
-  expect(premiumCta).toBeInTheDocument();
-
-  await user.click(premiumCta);
-  expect(
-    screen.getByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
-  ).toBeInTheDocument();
-  const closeButtonIcon1 = screen.getByLabelText("Close modal");
-  await user.click(closeButtonIcon1.parentElement as HTMLElement);
-  expect(
-    screen.queryByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
-  ).not.toBeInTheDocument();
-});
-
-it("toggles between the product offerings in the premium upsell dialog", async () => {
-  const user = userEvent.setup();
-  const ComposedDashboard = composeStory(
-    DashboardUsNoPremiumNoScanNoBreaches,
-    Meta,
-  );
-  render(<ComposedDashboard />);
-
-  // We show a CTA on desktop in the toolbar and in the mobile menu
-  const premiumCtas = screen.queryAllByRole("button", {
-    name: "Automatic data removal: Off",
-  });
-  expect(premiumCtas.length).toBe(2);
-
-  await user.click(premiumCtas[0]);
-
-  const productTabMonthly = screen.getByRole("radio", { name: "Monthly" });
-  const productYearlyCta = screen.getByRole("link", {
-    name: "Select yearly plan",
-  });
-  expect(productYearlyCta).toBeInTheDocument();
-
-  await user.click(productTabMonthly);
-
-  const productMonthlyCta = screen.getByRole("link", {
-    name: "Select monthly plan",
-  });
-  expect(productMonthlyCta).toBeInTheDocument();
 });
 
 it("shows US users with Premium the date of their last scan", () => {
@@ -3698,7 +3304,7 @@ describe("CSAT survey banner", () => {
     expect(cookies.get("last_scan_date_plus-user_dismissed")).toBeDefined();
   });
 
-  it("displays the petition CSAT survey for users in the control branch", async () => {
+  it("displays the petition CSAT survey for US users on the control branch", async () => {
     const user = userEvent.setup();
     const ComposedDashboard = composeStory(
       DashboardUsPremiumResolvedScanNoBreaches,
@@ -3709,7 +3315,7 @@ describe("CSAT survey banner", () => {
         activeTab="fixed"
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: false,
           },
@@ -3730,7 +3336,28 @@ describe("CSAT survey banner", () => {
     expect(cookies.get("petition_banner_plus-user_dismissed")).toBeDefined();
   });
 
-  it("does not display the petition CSAT survey for users in the treatment branch before they interacted with the “Data privacy petition banner”", () => {
+  it("does not display the petition CSAT survey for non-US users on the control branch", () => {
+    const ComposedDashboard = composeStory(DashboardNonUsNoBreaches, Meta);
+    render(
+      <ComposedDashboard
+        activeTab="action-needed"
+        enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
+        experimentData={{
+          ...defaultExperimentData["Features"],
+          "data-privacy-petition-banner": {
+            enabled: false,
+          },
+        }}
+      />,
+    );
+
+    const answerButton = screen.queryByRole("button", {
+      name: "Neutral",
+    });
+    expect(answerButton).not.toBeInTheDocument();
+  });
+
+  it("does not display the petition CSAT survey for users on the treatment branch before they interacted with the “Data privacy petition banner”", () => {
     const ComposedDashboard = composeStory(
       DashboardUsPremiumResolvedScanNoBreaches,
       Meta,
@@ -3740,7 +3367,7 @@ describe("CSAT survey banner", () => {
         activeTab="fixed"
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: true,
           },
@@ -3754,7 +3381,7 @@ describe("CSAT survey banner", () => {
     expect(answerButton).not.toBeInTheDocument();
   });
 
-  it("displays the petition CSAT survey for users in the treatment branch after they interacted with the “Data privacy petition banner”", async () => {
+  it("displays the petition CSAT survey for users on the treatment branch after they clicked “No, thank you”", async () => {
     const user = userEvent.setup();
     const ComposedDashboard = composeStory(
       DashboardUsPremiumResolvedScanNoBreaches,
@@ -3765,7 +3392,7 @@ describe("CSAT survey banner", () => {
         activeTab="fixed"
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: true,
           },
@@ -3779,15 +3406,171 @@ describe("CSAT survey banner", () => {
     });
     await user.click(dismissCta);
 
-    // The petition CSAT survey is only shown on the next visit of the dashboard
-    // so that the user is not being flashed directly with a second banner after
-    // interacting with the petition banner.
+    const answerButton = screen.getByRole("button", {
+      name: "Neutral",
+    });
+    expect(answerButton).toBeInTheDocument();
+  });
+
+  it("displays the petition CSAT survey for users on the treatment branch after they clicked “Sign petition”", async () => {
+    const user = userEvent.setup();
+    const ComposedDashboard = composeStory(
+      DashboardUsPremiumResolvedScanNoBreaches,
+      Meta,
+    );
+    const ComposedDashboardComponent = () => (
+      <ComposedDashboard
+        activeTab="fixed"
+        enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
+        experimentData={{
+          ...defaultExperimentData["Features"],
+          "data-privacy-petition-banner": {
+            enabled: true,
+          },
+        }}
+      />
+    );
     render(<ComposedDashboardComponent />);
+
+    const dismissCta = screen.getByRole("link", {
+      name: "Sign petition",
+    });
+    await user.click(dismissCta);
 
     const answerButton = screen.getByRole("button", {
       name: "Neutral",
     });
     expect(answerButton).toBeInTheDocument();
+  });
+
+  it("does not display any CSAT survey alongside the Petition banner", () => {
+    const ComposedDashboard = composeStory(
+      DashboardUsPremiumResolvedScanNoBreaches,
+      Meta,
+    );
+    render(
+      <ComposedDashboard
+        activeTab="fixed"
+        elapsedTimeInDaysSinceInitialScan={90}
+        hasFirstMonitoringScan
+        enabledFeatureFlags={[
+          "LatestScanDateCsatSurvey",
+          "AutomaticRemovalCsatSurvey",
+        ]}
+        experimentData={{
+          ...defaultExperimentData["Features"],
+          "data-privacy-petition-banner": {
+            enabled: true,
+          },
+        }}
+      />,
+    );
+
+    const petitionCta = screen.queryByRole("link", {
+      name: "Sign petition",
+    });
+    expect(petitionCta).toBeInTheDocument();
+
+    const answerButton = screen.queryByRole("button", {
+      name: "Neutral",
+    });
+    expect(answerButton).not.toBeInTheDocument();
+  });
+
+  it("displays the removal time estimates CSAT survey on the “fixed” tab to Plus users on the treatment branch", () => {
+    const ComposedDashboard = composeStory(
+      DashboardUsPremiumResolvedScanNoBreaches,
+      Meta,
+    );
+    render(
+      <ComposedDashboard
+        activeTab="fixed"
+        enabledFeatureFlags={["DataBrokerRemovalTimeEstimateCsat"]}
+        experimentData={{
+          ...defaultExperimentData["Features"],
+          "data-broker-removal-time-estimates": {
+            enabled: true,
+          },
+        }}
+      />,
+    );
+
+    const answerButton = screen.getByRole("button", {
+      name: "Neutral",
+    });
+    expect(answerButton).toBeInTheDocument();
+  });
+
+  it("displays the removal time estimates CSAT survey on the “fixed” tab to Plus users on the control branch", () => {
+    const ComposedDashboard = composeStory(
+      DashboardUsPremiumResolvedScanNoBreaches,
+      Meta,
+    );
+    render(
+      <ComposedDashboard
+        activeTab="fixed"
+        enabledFeatureFlags={["DataBrokerRemovalTimeEstimateCsat"]}
+        experimentData={{
+          ...defaultExperimentData["Features"],
+          "data-broker-removal-time-estimates": {
+            enabled: false,
+          },
+        }}
+      />,
+    );
+
+    const answerButton = screen.getByRole("button", {
+      name: "Neutral",
+    });
+    expect(answerButton).toBeInTheDocument();
+  });
+
+  it("does not display the removal time estimates CSAT survey on the “action needed” tab to Plus users on the treatment branch", () => {
+    const ComposedDashboard = composeStory(
+      DashboardUsPremiumResolvedScanNoBreaches,
+      Meta,
+    );
+    render(
+      <ComposedDashboard
+        activeTab="action-needed"
+        enabledFeatureFlags={["DataBrokerRemovalTimeEstimateCsat"]}
+        experimentData={{
+          ...defaultExperimentData["Features"],
+          "data-broker-removal-time-estimates": {
+            enabled: true,
+          },
+        }}
+      />,
+    );
+
+    const answerButton = screen.queryByRole("button", {
+      name: "Neutral",
+    });
+    expect(answerButton).not.toBeInTheDocument();
+  });
+
+  it("does not display the removal time estimates CSAT survey on the “fixed” tab to free users on the treatment branch", () => {
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumUnresolvedScanNoBreaches,
+      Meta,
+    );
+    render(
+      <ComposedDashboard
+        activeTab="fixed"
+        enabledFeatureFlags={["DataBrokerRemovalTimeEstimateCsat"]}
+        experimentData={{
+          ...defaultExperimentData["Features"],
+          "data-broker-removal-time-estimates": {
+            enabled: true,
+          },
+        }}
+      />,
+    );
+
+    const answerButton = screen.queryByRole("button", {
+      name: "Neutral",
+    });
+    expect(answerButton).not.toBeInTheDocument();
   });
 });
 
@@ -3801,7 +3584,7 @@ describe("Data privacy petition banner", () => {
       <ComposedDashboard
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: true,
           },
@@ -3825,7 +3608,7 @@ describe("Data privacy petition banner", () => {
         activeTab="fixed"
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: true,
           },
@@ -3849,7 +3632,7 @@ describe("Data privacy petition banner", () => {
         activeTab="fixed"
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: true,
           },
@@ -3872,7 +3655,7 @@ describe("Data privacy petition banner", () => {
       <ComposedDashboard
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: true,
           },
@@ -3892,7 +3675,7 @@ describe("Data privacy petition banner", () => {
       <ComposedDashboard
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: true,
           },
@@ -3927,7 +3710,7 @@ describe("Data privacy petition banner", () => {
         activeTab="fixed"
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: true,
           },
@@ -3959,7 +3742,7 @@ describe("Data privacy petition banner", () => {
         activeTab="fixed"
         enabledFeatureFlags={["PetitionBannerCsatSurvey"]}
         experimentData={{
-          ...defaultExperimentData,
+          ...defaultExperimentData["Features"],
           "data-privacy-petition-banner": {
             enabled: true,
           },
@@ -3983,5 +3766,277 @@ describe("Data privacy petition banner", () => {
         name: "Sign petition",
       }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("Upsell badge", () => {
+  it("shows US users with Premium the upsell badge", () => {
+    const ComposedDashboard = composeStory(
+      DashboardUsPremiumEmptyScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard />);
+
+    // We show an upsell badge on desktop in the toolbar and in the mobile menu
+    const upsellBadges = screen.queryAllByRole("button", {
+      name: "Automatic data removal: On",
+    });
+    expect(upsellBadges.length).toBe(2);
+  });
+
+  it("shows US users without Premium the upsell button", () => {
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumEmptyScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard />);
+
+    // We show a CTA on desktop in the toolbar and in the mobile menu
+    const premiumCtas = screen.queryAllByRole("button", {
+      name: "Automatic data removal: Off",
+    });
+    expect(premiumCtas.length).toBe(2);
+  });
+
+  it("does not show non-US users the upsell badge", () => {
+    const ComposedDashboard = composeStory(DashboardNonUsNoBreaches, Meta);
+    render(<ComposedDashboard />);
+
+    // We show an upsell badge on desktop in the toolbar and in the mobile menu
+    const upsellBadges = screen.queryAllByRole("button", {
+      name: "Automatic data removal: On",
+    });
+    expect(upsellBadges.length).toBe(0);
+  });
+
+  it("does not show non-US users the upsell button", () => {
+    const ComposedDashboard = composeStory(DashboardNonUsNoBreaches, Meta);
+    render(<ComposedDashboard />);
+
+    // We show a CTA on desktop in the toolbar and in the mobile menu
+    const premiumCtas = screen.queryAllByRole("button", {
+      name: "Automatic data removal: Off",
+    });
+    expect(premiumCtas.length).toBe(0);
+  });
+
+  it("opens and closes the premium upsell dialog via the Premium upsell badge)", async () => {
+    const user = userEvent.setup();
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumNoScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard />);
+
+    // We show a CTA on desktop in the toolbar and in the mobile menu
+    const premiumCtas = screen.queryAllByRole("button", {
+      name: "Automatic data removal: Off",
+    });
+    expect(premiumCtas.length).toBe(2);
+
+    // Shows the modal for the desktop layout
+    await user.click(premiumCtas[0]);
+    expect(
+      screen.getByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
+    ).toBeInTheDocument();
+    const closeButtonIcon1 = screen.getByLabelText("Close modal");
+    await user.click(closeButtonIcon1.parentElement as HTMLElement);
+    expect(
+      screen.queryByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
+    ).not.toBeInTheDocument();
+
+    // Shows the modal for the mobile layout
+    await user.click(premiumCtas[1]);
+    expect(
+      screen.getByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
+    ).toBeInTheDocument();
+    const closeButtonIcon2 = screen.getByLabelText("Close modal");
+    await user.click(closeButtonIcon2.parentElement as HTMLElement);
+    expect(
+      screen.queryByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the premium upsell dialog of the Premium upsell badge open by default)", () => {
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumNoScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard autoOpenUpsellDialog />);
+
+    expect(
+      screen.getByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
+    ).toBeInTheDocument();
+  });
+
+  it("closes the premium upsell dialog of the Premium upsell badge after it opened by default)", async () => {
+    const user = userEvent.setup();
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumNoScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard autoOpenUpsellDialog />);
+
+    expect(
+      screen.getByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
+    ).toBeInTheDocument();
+
+    const closeButtonIcon1 = screen.getByLabelText("Close modal");
+    await user.click(closeButtonIcon1.parentElement as HTMLElement);
+    expect(
+      screen.queryByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("opens and closes the premium upsell dialog via the Premium upsell button", async () => {
+    const user = userEvent.setup();
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumEmptyScanResolvedBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard />);
+
+    const premiumCta = screen.getByRole("button", {
+      name: "Get continuous protection",
+    });
+    expect(premiumCta).toBeInTheDocument();
+
+    await user.click(premiumCta);
+    expect(
+      screen.getByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
+    ).toBeInTheDocument();
+    const closeButtonIcon1 = screen.getByLabelText("Close modal");
+    await user.click(closeButtonIcon1.parentElement as HTMLElement);
+    expect(
+      screen.queryByText("Turn on automatic data removal with ⁨Monitor Plus⁩"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("toggles between the product offerings in the premium upsell dialog", async () => {
+    const user = userEvent.setup();
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumNoScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard />);
+
+    // We show a CTA on desktop in the toolbar and in the mobile menu
+    const premiumCtas = screen.queryAllByRole("button", {
+      name: "Automatic data removal: Off",
+    });
+    expect(premiumCtas.length).toBe(2);
+
+    await user.click(premiumCtas[0]);
+
+    const productTabMonthly = screen.getByRole("radio", { name: "Monthly" });
+    const productYearlyCta = screen.getByRole("link", {
+      name: "Select yearly plan",
+    });
+    expect(productYearlyCta).toBeInTheDocument();
+
+    await user.click(productTabMonthly);
+
+    const productMonthlyCta = screen.getByRole("link", {
+      name: "Select monthly plan",
+    });
+    expect(productMonthlyCta).toBeInTheDocument();
+  });
+
+  it("links to the yearly SubPlat2 subscription plan", async () => {
+    const user = userEvent.setup();
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumNoScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard />);
+
+    // We show a CTA on desktop in the toolbar and in the mobile menu
+    const premiumCtas = screen.queryAllByRole("button", {
+      name: "Automatic data removal: Off",
+    });
+    await user.click(premiumCtas[0]);
+
+    const ctaLink = screen.getByRole("link", {
+      name: "Select yearly plan",
+    });
+    expect(ctaLink).toHaveAttribute(
+      "href",
+      "https://accounts.stage.mozaws.net/subscriptions/products/prod_NErZh679W62lai?plan=price_1NvqawKb9q6OnNsLRTnYrtrV&form_type=button&entrypoint=monitor.mozilla.org-monitor-in-product-navigation-upsell&utm_source=product&utm_medium=monitor&utm_campaign=navigation-upsell",
+    );
+  });
+
+  it("links to the monthly SubPlat2 subscription plan", async () => {
+    const user = userEvent.setup();
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumNoScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard />);
+
+    // We show a CTA on desktop in the toolbar and in the mobile menu
+    const premiumCtas = screen.queryAllByRole("button", {
+      name: "Automatic data removal: Off",
+    });
+    await user.click(premiumCtas[0]);
+
+    const productTabMonthly = screen.getByRole("radio", { name: "Monthly" });
+    await user.click(productTabMonthly);
+
+    const ctaLink = screen.getByRole("link", {
+      name: "Select monthly plan",
+    });
+    expect(ctaLink).toHaveAttribute(
+      "href",
+      "https://accounts.stage.mozaws.net/subscriptions/products/prod_NErZh679W62lai?plan=price_1MUNq0Kb9q6OnNsL4BoJgepf&form_type=button&entrypoint=monitor.mozilla.org-monitor-in-product-navigation-upsell&utm_source=product&utm_medium=monitor&utm_campaign=navigation-upsell",
+    );
+  });
+
+  it("links to the yearly SubPlat3 subscription plan", async () => {
+    const user = userEvent.setup();
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumNoScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard enabledFeatureFlags={["SubPlat3"]} />);
+
+    // We show a CTA on desktop in the toolbar and in the mobile menu
+    const premiumCtas = screen.queryAllByRole("button", {
+      name: "Automatic data removal: Off",
+    });
+    await user.click(premiumCtas[0]);
+
+    const ctaLink = screen.getByRole("link", {
+      name: "Select yearly plan",
+    });
+    expect(ctaLink).toHaveAttribute(
+      "href",
+      "https://payments-next.stage.fxa.nonprod.webservices.mozgcp.net/monitorplusstage/yearly/landing?form_type=button&entrypoint=monitor.mozilla.org-monitor-in-product-navigation-upsell&utm_source=product&utm_medium=monitor&utm_campaign=navigation-upsell",
+    );
+  });
+
+  it("links to the monthly SubPlat3 subscription plan", async () => {
+    const user = userEvent.setup();
+    const ComposedDashboard = composeStory(
+      DashboardUsNoPremiumNoScanNoBreaches,
+      Meta,
+    );
+    render(<ComposedDashboard enabledFeatureFlags={["SubPlat3"]} />);
+
+    // We show a CTA on desktop in the toolbar and in the mobile menu
+    const premiumCtas = screen.queryAllByRole("button", {
+      name: "Automatic data removal: Off",
+    });
+    await user.click(premiumCtas[0]);
+
+    const productTabMonthly = screen.getByRole("radio", { name: "Monthly" });
+    await user.click(productTabMonthly);
+
+    const ctaLink = screen.getByRole("link", {
+      name: "Select monthly plan",
+    });
+    expect(ctaLink).toHaveAttribute(
+      "href",
+      "https://payments-next.stage.fxa.nonprod.webservices.mozgcp.net/monitorplusstage/monthly/landing?form_type=button&entrypoint=monitor.mozilla.org-monitor-in-product-navigation-upsell&utm_source=product&utm_medium=monitor&utm_campaign=navigation-upsell",
+    );
   });
 });

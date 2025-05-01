@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint @typescript-eslint/no-var-requires: "off" */
 import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
@@ -21,7 +20,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "stage.firefoxmonitor.nonprod.cloudops.mozgcp.net",
+        hostname: "monitor-stage.allizom.org",
       },
       {
         protocol: "https",
@@ -168,20 +167,13 @@ const nextConfig = {
       type: "asset/source",
     });
 
-    config.externals ??= {};
-    config.externals.push({
-      knex: "commonjs knex",
-    });
-
     return config;
   },
-  experimental: {
-    // Without this setting, Next.js has Webpack trying and failing to load
-    // uglify-js when compiling MJML email templates to HTML in `renderEmail.ts`:
-    serverComponentsExternalPackages: ["mjml"],
-    // Sentry 8.x requires `instrumentation.ts` vs. it's previous custom approach.
-    instrumentationHook: true,
-  },
+  // Without adding MJML here, Next.js has Webpack trying and failing to load
+  // uglify-js when compiling MJML email templates to HTML in `renderEmail.ts`:
+  // commonjs and knex are needed to avoid errors about not being able to load
+  // better-sqlite3, for some reason.
+  serverExternalPackages: ["mjml", "commonjs", "knex"],
 };
 
 const sentryOptions = {
@@ -205,7 +197,7 @@ const sentryOptions = {
   hideSourceMaps: false,
 
   sourcemaps: {
-    disable: process.env.UPLOAD_SENTRY_SOURCEMAPS !== "true",
+    disable: process.env.UPLOAD_SENTRY_SOURCEMAPS === "false",
   },
 };
 

@@ -6,16 +6,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { logger } from "../../../../../../functions/server/logging";
 import { errorIfProduction } from "../../../../../utils/errorThrower";
 import { getBreachesForHash } from "../../../config/defaults";
+import { BreachedAccountResponse } from "../../../../../../../utils/hibp";
 
-type BreachedAccountResponse = {
-  hashSuffix: string;
-  websites: string[];
-}[];
-
-export function GET(
+export async function GET(
   _: NextRequest,
-  { params }: { params: { hashPrefix: string } },
+  props: { params: Promise<{ hashPrefix: string }> },
 ) {
+  const params = await props.params;
   const prodError = errorIfProduction();
   if (prodError) return prodError;
 
@@ -26,7 +23,7 @@ export function GET(
 
   const data: BreachedAccountResponse = [
     {
-      hashSuffix: "", //hibp.js ignores hashSuffix if a mock endpoint is used.
+      hashSuffix: "", //hibp.ts ignores hashSuffix if a mock endpoint is used.
       websites: breachesList,
     },
   ];

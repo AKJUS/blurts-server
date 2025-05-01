@@ -16,10 +16,19 @@ settings-alert-preferences-option-two = プライマリーメールアドレス�
 
 ## Monitored email addresses
 
-
-## Deactivate account
-
-settings-deactivate-account-title = アカウントを無効化
+# Variables:
+#   $email (string) - Email address
+settings-email-list-title = 監視中のメールアドレス
+# Variables:
+#   $limit (number) - Number of email addresses included in the plan
+settings-email-limit-info = 最大 { $limit } 件のメールを監視できます。
+settings-remove-email-button-label = 削除
 
 ## Delete Monitor account
+
+
+## Monthly Monitor Report
+
+
+## Settings page redesign
 

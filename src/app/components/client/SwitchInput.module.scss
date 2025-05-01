@@ -1,0 +1,20 @@
+@use "../../tokens";
+
+.switchInput {
+  svg {
+    fill: tokens.$color-grey-40;
+    stroke: none;
+
+    circle {
+      fill: tokens.$color-white;
+    }
+  }
+
+  &.isSelected svg {
+    fill: tokens.$color-green-50;
+  }
+
+  .focusRing {
+    stroke: tokens.$color-blue-50;
+  }
+}

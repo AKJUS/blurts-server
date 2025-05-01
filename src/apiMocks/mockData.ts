@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { faker } from "@faker-js/faker";
-import { OnerepScanResultRow } from "knex/types/tables";
+import { AudienceRow, OnerepScanResultDataBrokerRow } from "knex/types/tables";
 import {
   RemovalStatus,
   RemovalStatusMap,
@@ -20,6 +20,8 @@ import {
 import { Session } from "next-auth";
 import { HibpLikeDbBreach } from "../utils/hibp";
 import { SerializedSubscriber } from "../next-auth";
+import { DataBrokerRemovalStatus } from "../app/functions/universal/dataBroker";
+import { UserAnnouncementWithDetails } from "../db/tables/user_announcements";
 
 // Setting this to a constant value produces the same result when the same methods
 // with the same version of faker are called.
@@ -40,6 +42,7 @@ export type RandomScanResultOptions = Partial<{
   fakerSeed: number;
   status: RemovalStatus;
   manually_resolved: boolean;
+  broker_status: DataBrokerRemovalStatus;
 }>;
 
 /**
@@ -50,12 +53,13 @@ export type RandomScanResultOptions = Partial<{
  */
 export function createRandomScanResult(
   options: RandomScanResultOptions = {},
-): OnerepScanResultRow {
+): OnerepScanResultDataBrokerRow {
   faker.seed(options.fakerSeed);
   const optout_attempts =
     options.status === "waiting_for_verification"
       ? faker.number.int({ min: 1, max: 42 })
       : undefined;
+  const url = faker.internet.url();
   return {
     id: faker.number.int(),
     onerep_scan_result_id: faker.number.int(),
@@ -79,12 +83,53 @@ export function createRandomScanResult(
     phones: [faker.phone.number()],
     emails: [faker.internet.exampleEmail()],
     relatives: Array.from({ length: 3 }, () => faker.person.fullName()),
-    link: faker.internet.url(),
-    data_broker: faker.internet.domainName(),
+    link: url,
+    data_broker: new URL(url).hostname,
     data_broker_id: faker.number.int(),
     created_at: options.createdDate ?? faker.date.recent({ days: 2 }),
     updated_at: faker.date.recent({ days: 1 }),
     optout_attempts,
+    last_optout_at:
+      typeof optout_attempts === "number" && optout_attempts > 0
+        ? faker.date.recent({ days: 3 })
+        : undefined,
+    broker_status: options.broker_status ?? "active",
+    scan_result_status: faker.helpers.arrayElement(
+      Object.values(RemovalStatusMap),
+    ) as RemovalStatus,
+    url: url,
+  };
+}
+
+export type RandomAnnouncementOptions = Partial<{
+  status: string;
+  audience: AudienceRow;
+  announcement_id: string;
+}>;
+
+export function createRandomAnnouncement(
+  options: RandomAnnouncementOptions = {},
+): UserAnnouncementWithDetails {
+  const adjective = faker.word.adjective();
+
+  return {
+    id: faker.number.int(),
+    announcement_id: options.announcement_id ?? faker.string.alpha(),
+    title: `${adjective.replace(/^./, (c) => c.toUpperCase())} new feature on Monitor`,
+    description: faker.lorem.sentence(),
+    small_image_path: faker.string.alpha(),
+    big_image_path: faker.string.alpha(),
+    cta_label: "Upgrade now",
+    cta_link: faker.internet.url(),
+    audience: options.audience ?? ("all_users" as AudienceRow),
+    created_at: faker.date.recent({ days: 1 }),
+    updated_at: faker.date.recent({ days: 1 }),
+    label: "published",
+    status: options.status ?? "new",
+    seen_at: faker.date.recent({ days: 1 }),
+    cleared_at: faker.date.recent({ days: 1 }),
+    user_created_at: faker.date.recent({ days: 1 }),
+    user_updated_at: faker.date.recent({ days: 1 }),
   };
 }
 
@@ -179,8 +224,10 @@ export function createRandomHibpListing(
   ];
   return {
     AddedDate: addedDate,
-    BreachDate: breachDate.toISOString(),
-    DataClasses: faker.helpers.arrayElements(possibleDataClasses),
+    BreachDate: breachDate,
+    DataClasses: faker.helpers.arrayElements(possibleDataClasses) as Array<
+      (typeof BreachDataTypes)[keyof typeof BreachDataTypes]
+    >,
     Description: faker.lorem.sentence(),
     Domain: faker.internet.domainName(),
     Id: faker.number.int(),
@@ -195,12 +242,13 @@ export function createRandomHibpListing(
     Name: name,
     PwnCount: faker.number.int(),
     Title: title,
-    FaviconUrl: faker.helpers.maybe(() =>
-      faker.image.url({
-        height: faker.number.int({ min: 20, max: 36 }),
-        width: faker.number.int({ min: 20, max: 36 }),
-      }),
-    ),
+    FaviconUrl: faker.helpers.maybe(() => {
+      const dimension = faker.number.int({ min: 20, max: 36 });
+      return faker.image.url({
+        height: dimension,
+        width: dimension,
+      });
+    }),
     ...fixedData,
   };
 }

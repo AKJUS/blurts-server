@@ -35,11 +35,13 @@ import NoteIcon from "./assets/note.svg";
 import CalendarIcon from "./assets/calendar.svg";
 import {
   ExposuresFilterStatusExplainer,
+  ExposuresFilterRemovalTimeExplainer,
   ExposuresFilterTypeExplainer,
 } from "./ExposuresFilterExplainer";
 import { Popover } from "./Popover";
 import { VisuallyHidden } from "../server/VisuallyHidden";
 import { FeatureFlagName } from "../../../db/tables/featureFlags";
+import { ExperimentData } from "../../../telemetry/generated/nimbus/experiments";
 
 export type FilterState = {
   exposureType: "show-all-exposure-type" | "data-broker" | "data-breach";
@@ -48,6 +50,7 @@ export type FilterState = {
 
 type ExposuresFilterProps = {
   enabledFeatureFlags: FeatureFlagName[];
+  experimentData: ExperimentData["Features"];
   initialFilterValues: FilterState;
   filterValues: FilterState;
   setFilterValues: React.Dispatch<React.SetStateAction<FilterState>>;
@@ -57,6 +60,7 @@ type ExposuresFilterProps = {
 
 export const ExposuresFilter = ({
   enabledFeatureFlags,
+  experimentData,
   initialFilterValues,
   filterValues,
   setFilterValues,
@@ -84,12 +88,28 @@ export const ExposuresFilter = ({
     exposureTypeExplainerTriggerRef,
   ).buttonProps;
 
+  // Removal time explainer dialog
+  const exposureRemovalTimeExplainerDialogState = useOverlayTriggerState({
+    onOpenChange: (isOpen) => {
+      recordTelemetry("popup", isOpen ? "view" : "exit", {
+        popup_id: "exposure_removal_time_info",
+      });
+    },
+  });
+  const exposureRemovalTimeExplainerDialogTrigger = useOverlayTrigger(
+    { type: "dialog" },
+    exposureRemovalTimeExplainerDialogState,
+  );
+  const exposureRemovalTimeExplainerTriggerRef =
+    useRef<HTMLButtonElement>(null);
+  const exposureRemovalTimeExplainerTriggerProps = useButton(
+    exposureRemovalTimeExplainerDialogTrigger.triggerProps,
+    exposureRemovalTimeExplainerTriggerRef,
+  ).buttonProps;
+
   // Status filter explainer dialog
   const exposureStatusExplainerDialogState = useOverlayTriggerState({
     onOpenChange: (isOpen) => {
-      /* c8 ignore next 3 */
-      // Since the Node 20.10 upgrade, it's been intermittently marking this
-      // (and this comment) as uncovered.
       recordTelemetry("popup", isOpen ? "view" : "exit", {
         popup_id: "exposure_status_info",
       });
@@ -279,6 +299,28 @@ export const ExposuresFilter = ({
           <li className={styles.hideOnMobile}>
             {l10n.getString("dashboard-exposures-filter-date-found")}
           </li>
+          {isPlusSubscriber &&
+            enabledFeatureFlags.includes(
+              "DataBrokerRemovalTimeEstimateLabel",
+            ) &&
+            experimentData["data-broker-removal-time-estimates"].enabled && (
+              <li className={styles.hideOnMobile}>
+                {l10n.getString(
+                  "dashboard-exposures-filter-exposure-removal-time-title",
+                )}
+                <button
+                  {...exposureRemovalTimeExplainerTriggerProps}
+                  ref={exposureRemovalTimeExplainerTriggerRef}
+                  aria-label={l10n.getString("open-modal-alt")}
+                  aria-describedby="filterRemovalTime"
+                >
+                  <VisuallyHidden id="filterRemovalTime">
+                    {l10n.getString("modal-exposure-removal-time-title")}
+                  </VisuallyHidden>
+                  <QuestionMarkCircle width="15" height="15" alt="" />
+                </button>
+              </li>
+            )}
           <li className={styles.hideOnMobile}>
             {l10n.getString("dashboard-exposures-filter-status")}
             <button
@@ -300,6 +342,13 @@ export const ExposuresFilter = ({
         <ExposuresFilterTypeExplainer
           explainerDialogProps={exposureTypeExplainerDialogTrigger}
           explainerDialogState={exposureTypeExplainerDialogState}
+          enabledFeatureFlags={enabledFeatureFlags}
+        />
+      )}
+      {exposureRemovalTimeExplainerDialogState.isOpen && (
+        <ExposuresFilterRemovalTimeExplainer
+          explainerDialogProps={exposureRemovalTimeExplainerDialogTrigger}
+          explainerDialogState={exposureRemovalTimeExplainerDialogState}
         />
       )}
       {exposureStatusExplainerDialogState.isOpen && (
@@ -393,7 +442,7 @@ function Radio(props: RadioProps & AriaRadioProps) {
   // TypeScript can't verify that this element is always contained inside a
   // <FilterRadioGroup>, and thus that `radioGroupState` is not null, so we have
   // to tell it ourselves:
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const { inputProps } = useRadio(props, radioGroupState!, ref);
 
   return (

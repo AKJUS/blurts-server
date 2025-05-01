@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const nextJest = require("next/jest");
 const createJestConfig = nextJest({ dir: "./" });
 
@@ -43,8 +42,6 @@ const customJestConfig = {
     "<rootDir>/src/apiMocks/mockData.ts",
     "<rootDir>/src/(.+).stories.(ts|tsx)",
     "<rootDir>/.storybook/",
-    // Old, pre-Next.js code assumed to be working:
-    "<rootDir>/src/appConstants.js",
   ],
 
   // Indicates which provider should be used to instrument code for coverage
@@ -115,7 +112,15 @@ const customJestConfig = {
   // ],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  // moduleNameMapper: {},
+  moduleNameMapper: {
+    // react-dom/server.edge is apparently needed instead of react-dom/server
+    // to avoid this error:
+    // > Uncaught ReferenceError: MessageChannel is not defined
+    // See https://github.com/facebook/react/issues/31827#issuecomment-2563094822
+    "react-dom/server": "react-dom/server.edge",
+    // Force module uuid to resolve with the CJS entry point, because Jest does not support package.json.exports. See https://github.com/uuidjs/uuid/issues/451
+    uuid: require.resolve("uuid"),
+  },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   modulePathIgnorePatterns: ["e2e/"],
@@ -162,14 +167,7 @@ const customJestConfig = {
   setupFiles: ["jest-canvas-mock"],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
-  setupFilesAfterEnv: [
-    "<rootDir>/jest.setup.ts",
-    // See https://www.benmvp.com/blog/avoiding-react-act-warning-when-accessibility-testing-next-link-jest-axe/
-    // Mocks the IntersectionObserver API, which is used by Next.js's <Link>.
-    // This prevents warnings about wrapping tests in act() for components that
-    // include <Link>s.
-    "react-intersection-observer/test-utils",
-  ],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
   // slowTestThreshold: 5,
@@ -193,9 +191,7 @@ const customJestConfig = {
   // ],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
-  // testPathIgnorePatterns: [
-  //   "/node_modules/"
-  // ],
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
   // testRegex: [],

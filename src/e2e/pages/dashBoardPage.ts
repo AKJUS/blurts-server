@@ -82,6 +82,7 @@ export class DashboardPage {
   readonly overviewCard: Locator;
   readonly overviewCardSummary: Locator;
   readonly overviewCardFindings: Locator;
+  readonly chartSvgExposuresCount: Locator;
 
   readonly upsellScreenButton: Locator;
   readonly urlRegex: RegExp;
@@ -92,7 +93,7 @@ export class DashboardPage {
       '//button[starts-with(@class, "ExposureCard_chevron")]',
     );
     this.fixExposureButton = page.getByRole("link", {
-      name: "Fix all exposures",
+      name: "Resolve exposures",
     });
     this.removeExposuresManually = page.getByRole("link", {
       name: "I’ll remove them manually",
@@ -100,7 +101,7 @@ export class DashboardPage {
     this.reviewAndRemoveProfiles = page.getByText(
       "Review & remove your profiles",
     );
-    this.markAsFixed = page.getByRole("button", { name: "Mark as fixed" });
+    this.markAsFixed = page.getByRole("button", { name: "Resolve exposures" });
     this.skipExposureRemoval = page.getByRole("link", { name: "Skip for now" });
     this.continuousProtectionButton = page.getByRole("button", {
       name: "Get continuous protection",
@@ -121,7 +122,7 @@ export class DashboardPage {
       '//a[starts-with(@class, "Shell_mozillaLink")]',
     );
     this.allBreachesFooter = page.locator("footer a", {
-      hasText: "All Breaches",
+      hasText: "Recent data breaches",
     });
     this.faqsFooter = page.locator("footer a", { hasText: "FAQs" });
     this.termsOfServiceFooter = page.locator("footer a", {
@@ -241,7 +242,9 @@ export class DashboardPage {
     this.faqsPageLink = page.getByTitle("Frequently asked questions").first();
 
     //upsell button
-    this.upsellScreenButton = page.getByText(/Let’s (keep going|fix it)/);
+    this.upsellScreenButton = page
+      .locator("a")
+      .getByText(/Let’s (keep going|fix it)/);
     this.overviewCard = page.locator("[class*='DashboardTopBanner_container']");
     this.overviewCardSummary = page.locator(
       "[aria-label='Dashboard summary'] > div > p",
@@ -249,6 +252,8 @@ export class DashboardPage {
     this.overviewCardFindings = page.locator(
       "[aria-label='Dashboard summary'] > div > h3",
     );
+    this.chartSvgExposuresCount =
+      this.overviewCard.locator("figure > div > svg");
 
     //regex
     this.urlRegex = /\/dashboard\/(fixed|action-needed)\/?/;

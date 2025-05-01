@@ -4,10 +4,10 @@
 
 ## Top navbar
 
-landing-all-hero-navbar-link-how-it-works = How it works
-landing-all-hero-navbar-link-pricing = Pricing
-landing-all-hero-navbar-link-faqs = FAQs
-landing-all-hero-navbar-link-all-breaches = All breaches
+landing-premium-hero-navbar-link-how-it-works = How it works
+landing-premium-hero-navbar-link-pricing = Pricing
+landing-premium-hero-navbar-link-faqs = FAQs
+landing-premium-hero-navbar-link-recent-breaches = Recent data breaches
 
 ##
 
@@ -133,7 +133,7 @@ landing-premium-continuous-data-removal-qn = How does continuous data removal wo
 # Variables:
 # $data_broker_sites_total_num is the total number of data broker sites available to scan. It will always be plural.
 landing-premium-continuous-data-removal-ans = { $data_broker_sites_total_num ->
-   *[other] Every month, we use the information you provided about yourself (name, location and birthdate) to search across { $data_broker_sites_total_num } data broker sites that sell people’s private information. If we find your data on any of these sites, we initiate the request for removal. Data removal can take anywhere from a day to a month. This feature is available for { -brand-monitor-plus } users only. <learn_more_link>Learn more here.</learn_more_link>
+   *[other] Every month, we use the information you provided about yourself (name, location and birthdate) to search across { $data_broker_sites_total_num } data broker sites that sell people’s private information. If we find your data on any of these sites, we initiate the request for removal. This feature is available for { -brand-monitor-plus } users only. <learn_more_link>Learn more here.</learn_more_link>
 }
 
 # Scan Limit

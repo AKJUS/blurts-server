@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { Session } from "next-auth";
-import { getSubscriberByFxaUid } from "../../../db/tables/subscribers.js";
-import { getUserEmails } from "../../../db/tables/emailAddresses.js";
+import { getSubscriberByFxaUid } from "../../../db/tables/subscribers";
+import { getUserEmails } from "../../../db/tables/emailAddresses";
 
 /**
  * NOTE: new function to replace getUserBreaches

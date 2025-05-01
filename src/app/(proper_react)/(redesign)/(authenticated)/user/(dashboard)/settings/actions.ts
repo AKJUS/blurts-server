@@ -4,8 +4,9 @@
 
 "use server";
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { SubscriberRow } from "knex/types/tables";
+import { OnerepProfileRow, SubscriberRow } from "knex/types/tables";
 import { getServerSession } from "../../../../../../functions/server/getServerSession";
 import {
   addSubscriberUnverifiedEmailHash,
@@ -15,12 +16,17 @@ import {
   deleteResolutionsWithEmail,
   getSubscriberByFxaUid,
 } from "../../../../../../../db/tables/subscribers";
-import { validateEmailAddress } from "../../../../../../../utils/emailAddress";
 import { initEmail } from "../../../../../../../utils/email";
 import { sendVerificationEmail } from "../../../../../../api/utils/email";
-import { getL10n } from "../../../../../../functions/l10n/serverComponents";
+import {
+  getAcceptLangHeaderInServerComponents,
+  getL10n,
+} from "../../../../../../functions/l10n/serverComponents";
 import { logger } from "../../../../../../functions/server/logging";
-import { CONST_MAX_NUM_ADDRESSES } from "../../../../../../../constants";
+import {
+  CONST_MAX_NUM_ADDRESSES,
+  CONST_MAX_NUM_ADDRESSES_PLUS,
+} from "../../../../../../../constants";
 import { SanitizedEmailAddressRow } from "../../../../../../functions/server/sanitize";
 import { deleteAccount } from "../../../../../../functions/server/deleteAccount";
 import { cookies } from "next/headers";
@@ -28,6 +34,9 @@ import {
   applyCurrentCouponCode,
   checkCurrentCouponCode,
 } from "../../../../../../functions/server/applyCoupon";
+import { validateEmailAddress } from "../../../../../../../utils/emailAddress";
+import updateDataBrokerScanProfile from "../../../../../../functions/server/updateDataBrokerScanProfile";
+import { hasPremium } from "../../../../../../functions/universal/user";
 
 export type AddEmailFormState =
   | { success?: never }
@@ -42,7 +51,15 @@ export async function onAddEmail(
   _prevState: AddEmailFormState,
   formData: FormData,
 ): Promise<AddEmailFormState> {
-  const l10n = getL10n();
+  // If `_reset` is set returning `success: false` resets the `useActionState`
+  // we are calling this server action from.
+  if (formData.get("_reset")) {
+    return {
+      success: false,
+    };
+  }
+
+  const l10n = getL10n(await getAcceptLangHeaderInServerComponents());
   const session = await getServerSession();
   if (!session?.user.subscriber?.fxa_uid) {
     return {
@@ -75,10 +92,13 @@ export async function onAddEmail(
     };
   }
 
+  const maxNumEmailAddresses = hasPremium(subscriber)
+    ? CONST_MAX_NUM_ADDRESSES_PLUS
+    : CONST_MAX_NUM_ADDRESSES;
   const existingAddresses = [session.user.email]
     .concat(subscriber.email_addresses.map((emailRow) => emailRow.email))
     .map((address) => address.toLowerCase());
-  if (existingAddresses.length >= CONST_MAX_NUM_ADDRESSES) {
+  if (existingAddresses.length >= maxNumEmailAddresses) {
     return {
       success: false,
       error: "too-many-emails",
@@ -126,7 +146,7 @@ export async function onAddEmail(
 }
 
 export async function onRemoveEmail(email: SanitizedEmailAddressRow) {
-  const l10n = getL10n();
+  const l10n = getL10n(await getAcceptLangHeaderInServerComponents());
   const session = await getServerSession();
   if (!session?.user.subscriber?.fxa_uid) {
     logger.error(
@@ -156,7 +176,7 @@ export async function onRemoveEmail(email: SanitizedEmailAddressRow) {
     await removeOneSecondaryEmail(email.id, subscriber.id);
     await deleteResolutionsWithEmail(subscriber.id, email.email);
     revalidatePath("/user/settings");
-  } catch (e) {
+  } catch {
     return {
       success: false,
       error: "delete-email-error",
@@ -176,10 +196,23 @@ export async function onDeleteAccount() {
     };
   }
 
-  await deleteAccount(session.user.subscriber);
+  const subscriber = await getSubscriberByFxaUid(
+    session.user.subscriber.fxa_uid,
+  );
+  if (!subscriber) {
+    logger.error(
+      `Tried to delete an account with a session that could not be linked to a subscriber.`,
+    );
+    return {
+      success: false,
+      error: "delete-account-with-invalid-session",
+      errorMessage: `User tried to delete their account, but we could not find it.`,
+    };
+  }
+  await deleteAccount(subscriber);
 
   // Tell the front page to display an "account deleted" notification:
-  cookies().set("justDeletedAccount", "justDeletedAccount", {
+  (await cookies()).set("justDeletedAccount", "justDeletedAccount", {
     expires: new Date(Date.now() + 5 * 60 * 1000),
     httpOnly: false,
   });
@@ -202,7 +235,20 @@ export async function onApplyCouponCode() {
     };
   }
 
-  const result = await applyCurrentCouponCode(session.user.subscriber);
+  const subscriber = await getSubscriberByFxaUid(
+    session.user.subscriber.fxa_uid,
+  );
+  if (!subscriber) {
+    logger.error(
+      `Tried to apply a coupon code with a session that could not be linked to a subscriber.`,
+    );
+    return {
+      success: false,
+      error: "apply-coupon-code-with-invalid-session",
+      errorMessage: `User tried to apply a coupon code, but we could not find their account.`,
+    };
+  }
+  const result = await applyCurrentCouponCode(subscriber);
   return result;
 }
 
@@ -219,4 +265,73 @@ export async function onCheckUserHasCurrentCouponSet() {
 
   const result = await checkCurrentCouponCode(session.user.subscriber);
   return result;
+}
+
+export async function onHandleUpdateProfileData(profileData: OnerepProfileRow) {
+  const session = await getServerSession();
+  if (!session?.user.subscriber?.id) {
+    logger.error(`User does not have an active session.`);
+    return {
+      success: false,
+      error: "update-profile-data-without-active-session",
+      errorMessage: `User does not have an active session.`,
+    };
+  }
+
+  if (!hasPremium(session.user)) {
+    logger.error(`User does not have an active subscription.`);
+    return {
+      success: false,
+      error: "update-profile-data-without-active-subscription",
+      errorMessage: `User does not have an active subscription.`,
+    };
+  }
+
+  if (!profileData.onerep_profile_id) {
+    logger.error(`User does not have a OneRep profile.`);
+    return {
+      success: false,
+      error: "update-profile-data-without-onerep-profile",
+      errorMessage: `User does not have a OneRep profile.`,
+    };
+  }
+
+  try {
+    const {
+      first_name,
+      middle_name,
+      last_name,
+      first_names,
+      last_names,
+      middle_names,
+      phone_numbers,
+      addresses,
+    } = profileData;
+    await updateDataBrokerScanProfile(profileData.onerep_profile_id, {
+      first_name,
+      last_name,
+      first_names,
+      last_names,
+      middle_names,
+      phone_numbers,
+      addresses,
+      middle_name: middle_name ?? "",
+    });
+  } catch (error) {
+    logger.error("Could not update profile details:", error);
+    return {
+      success: false,
+      error: "update-profile-data-updating-profile-failed",
+      errorMessage: `Updating profile failed.`,
+    };
+  }
+
+  // Tell the /edit-info page to display an “details saved” notification:
+  (await cookies()).set("justSavedDetails", "justSavedDetails", {
+    expires: new Date(Date.now() + 5 * 60 * 1000),
+    httpOnly: false,
+  });
+
+  revalidatePath("/user/settings/edit-info");
+  redirect("/user/settings/edit-info");
 }

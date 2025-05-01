@@ -4,12 +4,15 @@
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { parse } from "yaml";
+import * as prettier from "prettier";
 
 run();
 
 /**
  * See https://experimenter.info/fml-spec/#additional-types
- * @typedef {"String" | "Boolean" | "Int" | "Text" | "Image" | `Option<${Type}>` | `List<${Type}>` | `Map<${Type}, ${Type}>`} Type
+ *
+ * @typedef { "String" | "Boolean" | "Int" | "Text" | "Image" } BaseType
+ * @typedef { BaseType | `Option<${BaseType}>` | `List<${BaseType}>` | `Map<${BaseType}, ${BaseType}>` } Type
  */
 /**
  * @typedef {"local" | "staging" | "production"} Channel
@@ -21,7 +24,7 @@ run();
  *     description: string;
  *     type: Type;
  *     default: unknown;
- *     string-alias?: string;
+ *     "string-alias"?: string;
  *   }
  * >} Variables
  */
@@ -34,7 +37,7 @@ run();
  *     variables: Variables;
  *     defaults?: Array<{
  *       channel: Channel;
- *       values: Record<keyof Variables, unknown>;
+ *       value: Record<keyof Variables, unknown>;
  *     }>;
  *   }>;
  *   enums?: Record<string, {
@@ -68,7 +71,10 @@ async function run() {
     "\n" +
     getLocalOverrides(nimbusConfig);
   await mkdir("src/telemetry/generated/nimbus/", { recursive: true });
-  await writeFile("src/telemetry/generated/nimbus/experiments.ts", typedef);
+  await writeFile(
+    "src/telemetry/generated/nimbus/experiments.ts",
+    await prettier.format(typedef, { parser: "typescript" }),
+  );
 }
 
 /**
@@ -91,7 +97,21 @@ function getFallbackObject(nimbusConfig) {
     },
   );
 
-  return `export const defaultExperimentData: ExperimentData = {\n${featureFallbackDefs.join("\n")}};\n`;
+  const defaultExperimentData = `
+    Features: {
+      ${featureFallbackDefs.join("\n")}
+    },
+    Enrollments: [
+      {
+        nimbus_user_id: "-1",
+        app_id: "-1",
+        experiment: "-1",
+        branch: "-1",
+        experiment_type: "-1",
+        is_preview: false
+      }
+    ]`;
+  return `export const defaultExperimentData: ExperimentData = {\n${defaultExperimentData}};\n`;
 }
 
 /**
@@ -108,11 +128,26 @@ function getLocalOverrides(nimbusConfig) {
         typeof localOverrides === "undefined"
           ? ""
           : `    ...${JSON.stringify(localOverrides.value, null, 2).replaceAll("\n", "\n    ")}\n`;
-      return `  "${featureId}": {\n    ...defaultExperimentData["${featureId}"],\n${overriddenValuesDef}  },\n`;
+      return `  "${featureId}": {\n    ...defaultExperimentData["Features"]["${featureId}"],\n${overriddenValuesDef}  },\n`;
     },
   );
 
-  return `export const localExperimentData: ExperimentData = {\n${featureLocalOverridesDefs.join("\n")}};\n`;
+  const localExperimentData = `
+  Features: {
+    ${featureLocalOverridesDefs.join("\n")}
+  },
+  Enrollments: [
+    {
+      nimbus_user_id: "-1",
+      app_id: "-1",
+      experiment: "-1",
+      branch: "-1",
+      experiment_type: "-1",
+      is_preview: false
+    }
+  ]`;
+
+  return `export const localExperimentData: ExperimentData = {\n${localExperimentData}};\n`;
 }
 
 /**
@@ -125,11 +160,24 @@ function getFeaturesTypeDef(nimbusConfig) {
       nimbusConfig.features[featureId].variables,
     );
     const variableDefs = variableNames.map((variableName) => {
-      return `    "${variableName}": ${getType(nimbusConfig.features[featureId].variables[variableName].type)};\n`;
+      return `    "${variableName}": ${getTypeScriptType(nimbusConfig.features[featureId].variables[variableName].type)};\n`;
     });
     return `  "${featureId}": {\n${variableDefs.join("")}  };\n`;
   });
-  const experimentDataTypeDef = `/** Status of experiments, as setup in Experimenter */\nexport type ExperimentData = {\n${featureDefs.join("")}};\n`;
+
+  const experimentDataType = `{
+  Features: {${featureDefs.join("")}};
+  Enrollments: Array<{
+    nimbus_user_id: string,
+    app_id: string,
+    experiment: string,
+    branch: string,
+    experiment_type: string,
+    is_preview: boolean
+    }>;
+  };`;
+
+  const experimentDataTypeDef = `/** Status of experiments, as setup in Experimenter */\nexport type ExperimentData = ${experimentDataType}`;
   const featureTypeDef =
     getStringAliases(nimbusConfig) +
     "\n\n" +
@@ -161,15 +209,15 @@ function getStringAliases(nimbusConfig) {
 
 /**
  * @param {NimbusConfig} nimbusConfig
- * @returns string
+ * @returns {string}
  */
 function getTypeAliases(nimbusConfig) {
   const objects = nimbusConfig.objects ?? {};
   const objectDefs = Object.keys(objects).map((typeAlias) => {
-    const propertyNames = Object.keys(nimbusConfig.objects[typeAlias].fields);
+    const propertyNames = Object.keys(objects[typeAlias].fields);
     const propertyDefs = propertyNames.map((propertyName) => {
       // TODO: Add descriptions as TSDoc comment?
-      return `  "${propertyName}": ${getType(nimbusConfig.objects[typeAlias].fields[propertyName].type)};\n`;
+      return `  "${propertyName}": ${getTypeScriptType(objects[typeAlias].fields[propertyName].type)};\n`;
     });
     // TODO: Add description as TSDoc comment?
     return `type ${typeAlias} = {\n${propertyDefs.join("")}};\n`;
@@ -178,7 +226,7 @@ function getTypeAliases(nimbusConfig) {
   const enums = nimbusConfig.enums ?? {};
   const enumDefs = Object.keys(enums).map((typeAlias) => {
     // TODO: Add values as TSDoc comment?
-    const unionOfStrings = Object.keys(nimbusConfig.enums[typeAlias].variants)
+    const unionOfStrings = Object.keys(enums[typeAlias].variants)
       .map((variant) => `"${variant}"`)
       .join(" | ");
     return `type ${typeAlias} = ${unionOfStrings};`;
@@ -194,9 +242,9 @@ function getTypeAliases(nimbusConfig) {
 
 /**
  * @param {string} type
- * @returns string
+ * @returns {string} type
  */
-function getType(type) {
+function getTypeScriptType(type) {
   if (type === "String") {
     return "string";
   }
@@ -211,16 +259,16 @@ function getType(type) {
   }
   if (type.startsWith("Option<")) {
     const t = type.substring("Option<".length, type.length - 1).trim();
-    return `null | ${getType(t)}`;
+    return `null | ${getTypeScriptType(t)}`;
   }
   if (type.startsWith("List<")) {
     const t = type.substring("List<".length, type.length - 1).trim();
-    return `Array<${getType(t)}>`;
+    return `Array<${getTypeScriptType(t)}>`;
   }
   if (type.startsWith("Map<")) {
     const kv = type.substring("Map<".length, type.length - 1).trim();
     const [k, v] = kv.split(",").map((part) => part.trim());
-    return `Record<${getType(k)}, ${getType(v)}>`;
+    return `Record<${getTypeScriptType(k)}, ${getTypeScriptType(v)}>`;
   }
 
   return type;

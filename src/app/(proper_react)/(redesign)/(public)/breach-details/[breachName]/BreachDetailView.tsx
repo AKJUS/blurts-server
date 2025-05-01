@@ -117,7 +117,7 @@ export const BreachDetailsView = (props: Props) => {
               href={`https://${breach.Domain}`}
               eventData={{ link_id: breach.Domain }}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="nofollow noopener noreferrer"
             >
               {breach.Domain}
             </TelemetryLink>
@@ -148,15 +148,16 @@ export const BreachDetailsView = (props: Props) => {
               </>
             ) : (
               l10n.getString("breach-overview-new", {
-                breachDate: (
-                  breach.BreachDate as unknown as Date
-                ).toLocaleString(getLocale(l10n), {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }),
+                breachDate: new Date(breach.BreachDate).toLocaleString(
+                  getLocale(l10n),
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  },
+                ),
                 breachTitle: breach.Title,
-                addedDate: (breach.AddedDate as unknown as Date).toLocaleString(
+                addedDate: new Date(breach.AddedDate).toLocaleString(
                   getLocale(l10n),
                   {
                     year: "numeric",

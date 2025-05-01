@@ -5,7 +5,7 @@
 "use client";
 
 import { useContext, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useOverlayTrigger, useToggleButton } from "react-aria";
 import { useOverlayTriggerState, useToggleState } from "react-stately";
@@ -88,9 +88,24 @@ function UpsellToggleButton(props: UpsellToggleButtonProps) {
     ...props,
     isSelected: props.hasPremium,
   });
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const dialogState = useOverlayTriggerState({
-    defaultOpen: false,
+    defaultOpen: props.autoOpenUpsellDialog,
+    onOpenChange(isOpen) {
+      // Remove `dialog` from URLSearchParams on closing the upsell dialog
+      // after it has been opened by linking to it.
+      if (!isOpen && props.autoOpenUpsellDialog) {
+        const nextSearchParams = new URLSearchParams(searchParams.toString());
+        nextSearchParams.delete("dialog");
+        const updatedPathname = `${pathname}?${nextSearchParams.toString()}`;
+        // Directly interacting with the history API is recommended by Next.js to
+        // avoid re-rendering on the server:
+        // See https://github.com/vercel/next.js/discussions/48110#discussioncomment-7563979.
+        window.history.replaceState(null, "", updatedPathname);
+      }
+    },
   });
   const { triggerProps, overlayProps } = useOverlayTrigger(
     { type: "dialog" },
@@ -154,15 +169,13 @@ export type UpsellBadgeProps = UpsellButtonProps & {
    * at more experiments in the future, make sure to remove the `?` so that
    * they're actually passed everywhere.
    */
-  experimentData?: ExperimentData;
+  experimentData?: ExperimentData["Features"];
+  autoOpenUpsellDialog?: boolean;
 };
 export function UpsellBadge(props: UpsellBadgeProps) {
   const countryCode = useContext(CountryCodeContext);
   const session = useSession();
 
-  /* c8 ignore next 5 */
-  // Since the Node 20.10 upgrade, it's been intermittently marking this (and
-  // this comment) as uncovered, even though I think it's covered by tests.
   if (!session.data) {
     return <></>;
   }
@@ -170,7 +183,13 @@ export function UpsellBadge(props: UpsellBadgeProps) {
   const { user } = session.data;
   const userHasPremium = hasPremium(user);
   if (userHasPremium || canSubscribeToPremium({ user, countryCode })) {
-    return <UpsellToggleButton {...props} hasPremium={userHasPremium} />;
+    return (
+      <UpsellToggleButton
+        {...props}
+        autoOpenUpsellDialog={props.autoOpenUpsellDialog}
+        hasPremium={userHasPremium}
+      />
+    );
   }
 
   return <></>;

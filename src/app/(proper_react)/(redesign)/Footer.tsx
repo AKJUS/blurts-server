@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import styles from "./Shell.module.scss";
+import styles from "./Shell/Shell.module.scss";
 import Image from "next/image";
 import Link from "next/link";
 import mozillaLogo from "../images/mozilla-logo.svg";
@@ -20,12 +20,10 @@ export const Footer = ({
   l10n,
   session,
   countryCode,
-  howItWorksFlagEnabled,
 }: {
   l10n: ExtendedReactLocalization;
   session?: Session;
   countryCode: string;
-  howItWorksFlagEnabled: boolean;
 }) => {
   return (
     <footer className={styles.footer}>
@@ -41,13 +39,13 @@ export const Footer = ({
           <TelemetryLink
             href="/breaches"
             eventData={{
-              link_id: "all_breaches_footer",
+              link_id: "recent_breaches_footer",
             }}
           >
-            {l10n.getString("footer-nav-all-breaches")}
+            {l10n.getString("footer-nav-recent-breaches")}
           </TelemetryLink>
         </li>
-        {countryCode === "us" && !session && howItWorksFlagEnabled && (
+        {countryCode === "us" && !session && (
           <li>
             <TelemetryLink
               href="/how-it-works"

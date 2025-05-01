@@ -6,11 +6,13 @@ import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "../../../../functions/server/logging";
-import AppConstants from "../../../../../appConstants";
 import { getSubscriberByFxaUid } from "../../../../../db/tables/subscribers";
 import { getUserEmails } from "../../../../../db/tables/emailAddresses";
 import { sendVerificationEmail } from "../../../utils/email";
-import { getL10n } from "../../../../functions/l10n/serverComponents";
+import {
+  getAcceptLangHeaderInServerComponents,
+  getL10n,
+} from "../../../../functions/l10n/serverComponents";
 import { initEmail } from "../../../../../utils/email";
 
 interface EmailResendRequest {
@@ -19,7 +21,7 @@ interface EmailResendRequest {
 
 export async function POST(req: NextRequest) {
   const token = await getToken({ req });
-  const l10n = getL10n();
+  const l10n = getL10n(await getAcceptLangHeaderInServerComponents());
 
   if (typeof token?.subscriber?.fxa_uid === "string") {
     try {
@@ -72,7 +74,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false }, { status: 500 });
     }
   } else {
-    // Not Signed in, redirect to home
-    return NextResponse.redirect(AppConstants.SERVER_URL, 301);
+    return NextResponse.json({ success: false }, { status: 401 });
   }
 }

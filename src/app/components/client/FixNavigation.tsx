@@ -19,6 +19,7 @@ import {
 } from "../../functions/server/getRelevantGuidedSteps";
 import { getGuidedExperienceBreaches } from "../../functions/universal/guidedExperienceBreaches";
 import { CheckIcon } from "../server/Icons";
+import { FeatureFlagName } from "../../../db/tables/featureFlags";
 
 export type Props = {
   currentSection:
@@ -29,6 +30,7 @@ export type Props = {
   subscriberEmails: string[];
   data: StepDeterminationData;
   label: string;
+  enabledFeatureFlags: FeatureFlagName[];
 };
 
 export const FixNavigation = (props: Props) => {
@@ -38,6 +40,7 @@ export const FixNavigation = (props: Props) => {
         currentSection={props.currentSection}
         subscriberEmails={props.subscriberEmails}
         data={props.data}
+        enabledFeatureFlags={props.enabledFeatureFlags}
       />
     </nav>
   );
@@ -47,6 +50,7 @@ export const Steps = (props: {
   currentSection: Props["currentSection"];
   subscriberEmails: string[];
   data: StepDeterminationData;
+  enabledFeatureFlags: FeatureFlagName[];
 }) => {
   const l10n = useL10n();
 
@@ -58,9 +62,6 @@ export const Steps = (props: {
     breachesByClassification.highRisk,
   ).reduce((acc, array) => acc + array.length, 0);
   const totalDataBrokerProfiles =
-    /* c8 ignore next 3 */
-    // Since the Node 20.10 upgrade, it's been intermittently marking this (and
-    // this comment) as uncovered, even though I think it's covered by tests.
     props.data.latestScanData?.results.length ?? 0;
   const totalPasswordBreaches = Object.values(
     breachesByClassification.passwordBreaches,
@@ -82,25 +83,23 @@ export const Steps = (props: {
       {label} {count > 0 && `(${count})`}
     </div>
   );
+  const dataBrokerStepCompleted =
+    hasCompletedStepSection(props.data, "Scan") &&
+    // TODO: MNTOR-3886 - Remove EnableRemovalUnderMaintenanceStep feature flag
+    /* c8 ignore next */
+    (!props.enabledFeatureFlags.includes("EnableRemovalUnderMaintenanceStep") ||
+      hasCompletedStepSection(props.data, "DataBrokerManualRemoval"));
 
   return (
     <ul className={styles.steps}>
       {isEligibleForStep(props.data, "Scan") && (
         <li
           aria-current={
-            /* c8 ignore next 7 */
-            // These lines should be covered by unit tests, but since the Node
-            // 20.10 upgrade, it's been intermittently marking this (and this
-            // comment) as uncovered.
             props.currentSection === "data-broker-profiles" ? "step" : undefined
           }
           className={`${styles.navigationItem} ${
             props.currentSection === "data-broker-profiles" ? styles.active : ""
-          } ${
-            hasCompletedStepSection(props.data, "Scan")
-              ? styles.isCompleted
-              : ""
-          }`}
+          } ${dataBrokerStepCompleted ? styles.isCompleted : ""}`}
         >
           <div className={styles.stepIcon}>
             <StepImage data={props.data} section="Scan" />
@@ -113,10 +112,6 @@ export const Steps = (props: {
       )}
       <li
         aria-current={
-          /* c8 ignore next 11 */
-          // These lines should be covered by unit tests, but since the Node
-          // 20.10 upgrade, it's been intermittently marking this (and this
-          // comment) as uncovered.
           props.currentSection === "high-risk-data-breach" ? "step" : undefined
         }
         className={`${styles.navigationItem} ${
@@ -137,10 +132,6 @@ export const Steps = (props: {
       </li>
       <li
         aria-current={
-          /* c8 ignore next 11 */
-          // These lines should be covered by unit tests, but since the Node
-          // 20.10 upgrade, it's been intermittently marking this (and this
-          // comment) as uncovered.
           props.currentSection === "leaked-passwords" ? "step" : undefined
         }
         className={`${styles.navigationItem} ${
@@ -161,30 +152,18 @@ export const Steps = (props: {
       </li>
       <li
         aria-current={
-          /* c8 ignore next 5 */
-          // This line should be covered by unit tests, but since the Node 20.10
-          // upgrade, it's been intermittently marking this (and this comment)
-          // as uncovered.
           props.currentSection === "security-recommendations"
             ? "step"
             : undefined
         }
         className={`${styles.navigationItem} ${
-          /* c8 ignore next 5 */
-          // This line should be covered by unit tests, but since the Node 20.10
-          // upgrade, it's been intermittently marking this (and this comment)
-          // as uncovered.
           props.currentSection === "security-recommendations"
             ? styles.active
             : ""
         } ${
           hasCompletedStepSection(props.data, "SecurityTips")
             ? styles.isCompleted
-            : /* c8 ignore next 4 */
-              // This line should be covered by unit tests, but since the Node 20.10
-              // upgrade, it's been intermittently marking this (and this comment)
-              // as uncovered.
-              ""
+            : ""
         }`}
       >
         <div className={styles.stepIcon}>
@@ -201,10 +180,6 @@ export const Steps = (props: {
             className={`${
               styles.activeProgressBarLine
             } ${calculateActiveProgressBarPosition(props.currentSection)} ${
-              /* c8 ignore next 5 */
-              // Since the Node 20.10 upgrade, it's been intermittently marking
-              // this (and this comment) as uncovered, even though I think it's
-              // covered by tests.
               isEligibleForStep(props.data, "Scan")
                 ? styles.hasFourSteps
                 : styles.hasThreeSteps
@@ -226,9 +201,6 @@ const StepImage = (props: {
     );
   }
 
-  /* c8 ignore next 10 */
-  // Since the Node 20.10 upgrade, it's been intermittently marking this (and
-  // this comment) as uncovered, even though I think it's covered by tests.
   const src =
     props.section === "Scan"
       ? stepDataBrokerProfilesIcon
@@ -241,10 +213,6 @@ const StepImage = (props: {
   return <Image src={src} alt="" width={22} height={22} />;
 };
 
-/* c8 ignore next 14 */
-// These lines should be covered by unit tests, but since the Node 20.10
-// upgrade, it's been intermittently marking them (and this comment) as
-// uncovered.
 function calculateActiveProgressBarPosition(section: Props["currentSection"]) {
   if (section === "high-risk-data-breach") {
     return styles.beginHighRiskDataBreaches;

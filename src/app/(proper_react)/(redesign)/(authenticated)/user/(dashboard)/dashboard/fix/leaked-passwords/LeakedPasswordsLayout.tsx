@@ -29,12 +29,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LeakedPasswordsDataTypes } from "../../../../../../../../functions/universal/breach";
 import { useTelemetry } from "../../../../../../../../hooks/useTelemetry";
+import { FeatureFlagName } from "../../../../../../../../../db/tables/featureFlags";
 
 export interface LeakedPasswordsLayoutProps {
   type: LeakedPasswordsTypes;
   subscriberEmails: string[];
   data: StepDeterminationData;
   isEligibleForPremium: boolean;
+  enabledFeatureFlags: FeatureFlagName[];
 }
 
 export function LeakedPasswordsLayout(props: LeakedPasswordsLayoutProps) {
@@ -68,15 +70,32 @@ export function LeakedPasswordsLayout(props: LeakedPasswordsLayoutProps) {
   // TODO: Write unit tests MNTOR-2560
   /* c8 ignore start */
   const emailsAffected = unresolvedPasswordBreach?.emailsAffected ?? [];
-  const nextStep = getNextGuidedStep(props.data, stepMap[props.type]);
+  const nextStep = getNextGuidedStep(
+    props.data,
+    props.enabledFeatureFlags,
+    stepMap[props.type],
+  );
 
   // If there are no unresolved breaches for the ”leaked passwords” step:
   // Go to the next step in the guided resolution or back to the dashboard.
   useEffect(() => {
-    if (!unresolvedPasswordBreach && !isStepDone) {
+    // The check for `isResolving` is a bit of a workaround; when we're done resolving
+    // all leaked passwords/security questions, we call `router.push()` with a `-done`
+    // route, and then call `router.refresh()`. However, that call to `router.refresh()`
+    // results in a new instance of `unresolvedPasswordBreach`, resulting in this effect
+    // trigger and redirecting to the next step.
+    // To avoid this, we also check `isResolving`, which is still `true` when marking
+    // this step as done.
+    if (!unresolvedPasswordBreach && !isStepDone && !isResolving) {
       router.push(nextStep.href);
     }
-  }, [nextStep.href, router, unresolvedPasswordBreach, isStepDone]);
+  }, [
+    nextStep.href,
+    router,
+    unresolvedPasswordBreach,
+    isStepDone,
+    isResolving,
+  ]);
 
   const pageData = getLeakedPasswords({
     dataType: props.type,
@@ -160,7 +179,7 @@ export function LeakedPasswordsLayout(props: LeakedPasswordsLayoutProps) {
       // `revalidatePath("/user/dashboard")` there, but the API doesn't appear
       // to necessarily share a cache with the client.
       router.refresh();
-    } catch (_error) {
+    } catch {
       // TODO: MNTOR-2563: Capture client error with @next/sentry
       setIsResolving(false);
     }
@@ -185,12 +204,14 @@ export function LeakedPasswordsLayout(props: LeakedPasswordsLayoutProps) {
       currentSection="leaked-passwords"
       hideProgressIndicator={isStepDone}
       showConfetti={isStepDone}
+      enabledFeatureFlags={props.enabledFeatureFlags}
     >
       <ResolutionContainer
         type="leakedPasswords"
         title={title}
         illustration={illustration}
         isPremiumUser={hasPremium(props.data.user)}
+        enabledFeatureFlags={props.enabledFeatureFlags}
         cta={
           !isStepDone && (
             <>

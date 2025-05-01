@@ -1,0 +1,67 @@
+@use "../../../../../../tokens";
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: tokens.$spacing-lg;
+  justify-content: center;
+  padding: tokens.$layout-2xs;
+
+  @media screen and (min-width: tokens.$screen-sm) {
+    padding: tokens.$layout-sm;
+  }
+
+  @media screen and (min-width: tokens.$screen-lg) {
+    flex-direction: row;
+    padding: tokens.$layout-sm tokens.$layout-lg;
+  }
+
+  @media screen and (min-width: tokens.$screen-xl) {
+    justify-content: flex-start;
+    padding: tokens.$layout-sm tokens.$layout-lg tokens.$layout-sm
+      tokens.$layout-xl;
+  }
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$layout-xs;
+
+  h2 {
+    font: tokens.$text-title-xs;
+  }
+
+  & [role="tab"]::after {
+    width: calc(100% - 24px - tokens.$spacing-xs);
+  }
+
+  @media screen and (min-width: tokens.$screen-lg) {
+    flex: 0 0 tokens.$content-xs;
+  }
+}
+
+.content {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0;
+  gap: tokens.$spacing-lg;
+  max-width: tokens.$content-lg;
+
+  &.isCard {
+    border-radius: tokens.$border-radius-lg;
+    background-color: tokens.$color-white;
+    box-shadow: tokens.$box-shadow-xs;
+    padding: tokens.$spacing-lg;
+  }
+
+  &:not(.isCard) section {
+    background-color: tokens.$color-white;
+    border-radius: tokens.$border-radius-lg;
+    box-shadow: tokens.$box-shadow-xs;
+    gap: tokens.$spacing-md;
+    padding: tokens.$spacing-lg;
+  }
+}

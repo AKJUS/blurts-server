@@ -6,70 +6,40 @@
 
 import { signIn } from "next-auth/react";
 import { useCookies } from "react-cookie";
-import { SignUpForm, Props as SignUpFormProps } from "./SignUpForm";
+import { Props, SignUpForm } from "./SignUpForm";
 import { TelemetryButton } from "../../../components/client/TelemetryButton";
-import { modifyAttributionsForUrlSearchParams } from "../../../functions/universal/attributions";
 import { ExperimentData } from "../../../../telemetry/generated/nimbus/experiments";
 import { useL10n } from "../../../hooks/l10n";
 import { WaitlistCta } from "./ScanLimit";
-
-export type Props = {
-  eligibleForPremium: boolean;
-  signUpCallbackUrl: string;
-  isHero?: boolean;
-  eventId: {
-    cta: string;
-    field?: string;
-  };
-  scanLimitReached: boolean;
-  placeholder?: string;
-};
-
-export function getAttributionSearchParams({
-  cookies,
-  emailInput,
-  experimentData,
-}: {
-  cookies: {
-    attributionsFirstTouch?: string;
-  };
-  emailInput?: string;
-  experimentData?: ExperimentData;
-}) {
-  const attributionSearchParams = modifyAttributionsForUrlSearchParams(
-    new URLSearchParams(cookies.attributionsFirstTouch),
-    {
-      entrypoint: "monitor.mozilla.org-monitor-product-page",
-      form_type: typeof emailInput === "string" ? "email" : "button",
-      ...(emailInput && { email: emailInput }),
-      ...(experimentData &&
-        experimentData["landing-page-free-scan-cta"].enabled && {
-          entrypoint_experiment: "landing-page-free-scan-cta",
-          entrypoint_variation:
-            experimentData["landing-page-free-scan-cta"].variant,
-        }),
-    },
-    {
-      utm_source: "product",
-      utm_medium: "monitor",
-      utm_campaign: "get_free_scan",
-    },
-  );
-
-  return attributionSearchParams.toString();
-}
+import { useContext, RefObject } from "react";
+import { AccountsMetricsFlowContext } from "../../../../contextProviders/accounts-metrics-flow";
+import { getFreeScanSearchParams } from "../../../functions/universal/getFreeScanSearchParams";
+import { CONST_URL_MONITOR_LANDING_PAGE_ID } from "../../../../constants";
+import { useViewTelemetry } from "../../../hooks/useViewTelemetry";
 
 export const FreeScanCta = (
-  props: SignUpFormProps & {
-    experimentData: ExperimentData;
+  props: Props & {
+    experimentData: ExperimentData["Features"];
+    showCtaOnly?: boolean;
   },
 ) => {
   const l10n = useL10n();
   const [cookies] = useCookies(["attributionsFirstTouch"]);
+  const metricsFlowContext = useContext(AccountsMetricsFlowContext);
+
+  const freeScanVariantId = props.experimentData["landing-page-free-scan-cta"]
+    .enabled
+    ? `-${props.experimentData["landing-page-free-scan-cta"].variant}`
+    : "";
+  const telemetryButtonId = `${props.eventId.cta}${freeScanVariantId}`;
+  const refViewTelemetry = useViewTelemetry("ctaButton", {
+    button_id: telemetryButtonId,
+  });
   if (
-    !props.experimentData["landing-page-free-scan-cta"].enabled ||
-    props.experimentData["landing-page-free-scan-cta"].variant ===
-      "ctaWithEmail"
+    (!props.experimentData["landing-page-free-scan-cta"].enabled ||
+      props.experimentData["landing-page-free-scan-cta"].variant ===
+        "ctaWithEmail") &&
+    !props.showCtaOnly
   ) {
     return (
       <SignUpForm
@@ -79,6 +49,10 @@ export const FreeScanCta = (
         signUpCallbackUrl={props.signUpCallbackUrl}
         eventId={props.eventId}
         experimentData={props.experimentData}
+        placeholder={props.placeholder}
+        label={props.label}
+        ctaLabel={props.ctaLabel}
+        labelPosition={props.labelPosition}
       />
     );
   }
@@ -88,31 +62,35 @@ export const FreeScanCta = (
   ) : (
     <div>
       <TelemetryButton
+        buttonRef={refViewTelemetry as RefObject<HTMLButtonElement | null>}
         variant="primary"
         event={{
           module: "ctaButton",
           name: "click",
           data: {
-            button_id: `${props.eventId.cta}-${props.experimentData["landing-page-free-scan-cta"].variant}`,
+            button_id: telemetryButtonId,
           },
         }}
         onPress={() => {
           void signIn(
             "fxa",
             { callbackUrl: props.signUpCallbackUrl },
-            getAttributionSearchParams({
+            getFreeScanSearchParams({
               cookies,
+              entrypoint: CONST_URL_MONITOR_LANDING_PAGE_ID,
               experimentData: props.experimentData,
+              metricsFlowData: metricsFlowContext.data,
             }),
           );
         }}
       >
-        {l10n.getString(
-          props.experimentData["landing-page-free-scan-cta"].variant ===
-            "ctaOnly"
-            ? "landing-all-hero-emailform-submit-label"
-            : "landing-all-hero-emailform-submit-sign-in-label",
-        )}
+        {props.ctaLabel ??
+          l10n.getString(
+            props.experimentData["landing-page-free-scan-cta"].variant ===
+              "ctaOnly"
+              ? "landing-all-hero-emailform-submit-label"
+              : "landing-all-hero-emailform-submit-sign-up-label",
+          )}
       </TelemetryButton>
     </div>
   );

@@ -2,11 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-## Breaches header
-
-## Breaches resolved filter
-
-## Breaches table
+breach-all-meta-page-title = 데이터 유출 데이터베이스 — { -brand-fx-monitor }
+breach-all-meta-social-title = { -brand-fx-monitor }가 감지한 모든 유출
+breach-all-meta-social-description = { -brand-fx-monitor }에서 감지한 알려진 침해의 전체 목록을 탐색한 후 정보가 노출되었는지 확인하세요.
+# Variables:
+#   $company (String) - Name of the company that was breached, e.g. "PHP Freaks"
+breach-detail-meta-page-title = { $company } 데이터 유출 – { -brand-fx-monitor }
+# Variables:
+#   $company (String) - Name of the company that was breached, e.g. "PHP Freaks"
+breach-detail-meta-social-title = { $company } 데이터 유출로 인한 영향을 받으셨나요?
+breach-detail-meta-social-description = { -brand-fx-monitor }를 사용하여 이번 노출로 인해 개인 정보가 노출되었는지 확인하고, 다음에 무엇을 해야 할지 알아보세요.
 
 ## Links that we might refer to when prompting the user to make changes after a breach
 
@@ -17,6 +22,10 @@ breach-checklist-link-mozilla-vpn = { -brand-mozilla-vpn }
 ## Prompts the user for changes when there is a breach detected of password
 
 breach-checklist-pw-header-text = 비밀번호를 업데이트하고 2단계 인증(2FA)을 활성화하세요.
+# The `breached-company-link` tags will be replaced with link tags or stripped if no link is available.
+# Variables:
+#   $passwordManagerLink (string) - a link to the password manager documentation, with { -breach-checklist-link-password-manager } as the label
+breach-checklist-pw-body-text = 대부분의 경우 기업 웹사이트에서 비밀번호를 변경할 것을 추천합니다. 그러나 <b>웹사이트가 다운되거나 악성 콘텐츠를 포함하고 있을 수 있으므로</b> <breached-company-link>사이트를 방문</breached-company-link>할 경우 주의하시기 바랍니다. 추가 보호를 위해 계정마다 반드시 고유한 비밀번호를 사용하여 유출된 비밀번호로 다른 계정에 접근할 수 없도록 하십시오. { $passwordManagerLink }에서 모든 비밀번호를 안전하게 관리하기 위한 도움을 받을 수 있습니다.
 
 ## Prompts the user for changes when there is a breach detected of email
 
@@ -81,7 +90,6 @@ breach-checklist-phone-header-2 = 실제 전화번호를 숨기는 { $firefoxRel
 ## Prompts the user for changes when there is a breach detected of security questions
 
 breach-checklist-sq-header-text = 보안 질문을 업데이트 하세요.
-
 # The `breached-company-link` tags will be replaced with link tags or stripped if no link is available.
 breach-checklist-sq-body-text = 대부분의 경우, 회사 웹사이트의 보안 질문을 업데이트하는 것을 추천 합니다. 하지만 <b>웹사이트가 다운되거나 악성 콘텐츠를 포함하고 있을 수 있으므로</b> <breached-company-link>사이트를 방문 를 방문</breached-company-link>할 경우 주의하시기 바랍니다. 추가 보호를 위해 보안 질문을 사용한 중요한 계정에서 이러한 보안 질문을 업데이트하고 모든 계정에 대해 고유한 비밀번호를 만드세요.
 

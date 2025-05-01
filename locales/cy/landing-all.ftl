@@ -3,14 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 public-nav-name = { -brand-mozilla-monitor }
-
-landing-all-hero-title = Canfod lle mae'ch manylion preifat yn cael eu rhyddhau — a'u cipio nôl
+landing-all-hero-title = Canfod lle mae'ch manylion preifat yn cael eu hamlygu — a'u cipio nôl
 landing-all-hero-lead = Rydym yn sganio tor-data i weld a yw'ch data wedi'u datgelu ac yn cynnig camau i chi i'w drwsio.
-
 landing-all-hero-emailform-input-placeholder = eichenw@example.com
 landing-all-hero-emailform-input-label = Rhowch eich cyfeiriad e-bost i wirio am ddatguddiadau tor-data.
 landing-all-hero-emailform-submit-label = Cael sgan am ddim
-
+landing-all-hero-emailform-submit-sign-up-label = Cofrestrwch i gael sgan am ddim
 # This is a label underneath a big number "14" - it's an image that demos Monitor.
 landing-all-hero-image-chart-label = datgeliadau
 
@@ -32,7 +30,7 @@ landing-all-faq-title = Cwestiynau cyffredin
 landing-all-faq-see-all = Gweld yr holl gwestiynau cyffredin
 landing-all-data-breach-definition-qn = Beth yn union yw tor-data?
 landing-all-data-breach-definition-ans = Mae tor-data yn digwydd pan fydd manylion personol neu breifat yn cael eu datgelu, eu dwyn neu eu copïo heb ganiatâd. Gall y digwyddiadau diogelwch hyn ddeillio o ymosodiadau seibr ar wefannau, apiau neu unrhyw gronfa ddata lle mae manylion personol pobl yn byw. Gall tor-data ddigwydd yn ddamweiniol hefyd, fel pan fydd manylion mewngofnodi rhywun yn cael eu rhyddhau'n gyhoeddus.
-landing-all-data-breach-next-steps-qn = Rwyf newydd ddeall fy mod i mewn tor-data. Beth ddylwn i ei wneud nesaf?
+landing-all-data-breach-next-steps-qn = Rwy newydd ddeall fy mod i'n rhan dor-data. Beth ddylwn i ei wneud nesaf?
 landing-all-data-breach-next-steps-ans = Ewch i { -brand-mozilla-monitor } i ddysgu beth i'w wneud ar ôl tor-data a chael camau gweithredu i ddatrys datgeliad eich manylion personol. Mae hacwyr yn dibynnu ar bobl yn ailddefnyddio cyfrineiriau, felly mae'n bwysig creu cyfrineiriau cryf, unigryw ar gyfer eich holl gyfrifon. Cadwch eich cyfrineiriau mewn man diogel y mai dim ond chi sydd â mynediad ato; gall hwn fod yr un man lle rydych yn cadw dogfennau pwysig, neu defnyddiwch reolwr cyfrinair.
 landing-all-data-breach-info-qn = Pa fanylion sy'n cael eu datgelu mewn achosion o dor-data?
 landing-all-data-breach-info-ans = Nid yw pob tor-data yn amlygu'r un wybodaeth i gyd. Mae'n dibynnu ar yr hyn y gall hacwyr gael mynediad ato. Mae llawer o achosion o dor-data yn amlygu cyfeiriadau e-bost a chyfrineiriau. Mae eraill yn datgelu manylion mwy sensitif fel rhifau cardiau credyd, rhifau PIN, a rhifau nawdd cymdeithasol.
@@ -72,7 +70,5 @@ landing-all-help-protect-you-feature-one = Byddwn yn chwilio amdanoch ym mhob ac
 landing-all-help-protect-you-feature-two = Byddwn yn eich arwain trwy'r camau i ddatrys pob tor-data
 landing-all-help-protect-you-feature-three = Byddwn yn monitro ac yn anfon rhybuddion atoch yn barhaus am unrhyw dor-data newydd
 landing-all-help-protect-you-cta = Cofrestrwch am rybuddion tor-data
-
 landing-all-get-started = Sganiwch eich e-bost i ddechrau
 landing-all-take-back-data = Ail feddiannwch eich rheolaeth o'ch data
-

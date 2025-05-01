@@ -2,27 +2,32 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { FeatureFlagName } from "../../../db/tables/featureFlags";
+
 // We need access to environment variables that are only available on the
 // server-side, because they're set by the server environment (but in
 // Storybook this is fine to run; the URLs don't need to work there):
 if (!process.env.STORYBOOK) {
-  // server-only doesn't have type definitions because it doesn't do anything;
-  // TS wouldn't complain for regular imports, but with dynamic imports (which
-  // we need for the Storybook conditional), it expects it to do something.
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  import("server-only");
+  import("./notInClientComponent");
 }
 
 type SubscriptionPeriod = "monthly" | "yearly";
 
 interface GetPremiumSubscriptionUrlParams {
   type: SubscriptionPeriod;
+  enabledFeatureFlags: FeatureFlagName[];
 }
 
 export function getPremiumSubscriptionUrl({
   type,
+  enabledFeatureFlags,
 }: GetPremiumSubscriptionUrlParams): string {
+  if (enabledFeatureFlags.includes("SubPlat3")) {
+    const subscriptionUrl = process.env.SUBPLAT_SUBSCRIPTIONS_URL as string;
+    const offeringId = process.env.SUBPLAT_MONITOR_OFFERING_ID as string;
+    return `${subscriptionUrl}/${offeringId}/${type}/landing`;
+  }
+
   const subscriptionUrl = process.env.FXA_SUBSCRIPTIONS_URL as string;
   const productId = process.env.PREMIUM_PRODUCT_ID as string;
   const planId = (

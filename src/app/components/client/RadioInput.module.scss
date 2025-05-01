@@ -1,0 +1,18 @@
+@use "../../tokens";
+
+.radioButton {
+  stroke: tokens.$color-purple-50;
+
+  svg {
+    fill: tokens.$color-purple-50;
+    stroke: none;
+  }
+
+  &.isSelected {
+    stroke: tokens.$color-grey-20;
+  }
+
+  .focusRing {
+    stroke: tokens.$color-blue-50;
+  }
+}

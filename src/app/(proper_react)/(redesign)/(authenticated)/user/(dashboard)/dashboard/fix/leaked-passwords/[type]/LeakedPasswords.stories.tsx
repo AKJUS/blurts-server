@@ -4,10 +4,11 @@
 
 import type { Meta, StoryObj } from "@storybook/react";
 import {
+  createRandomAnnouncement,
   createRandomBreach,
   createUserWithPremiumSubscription,
 } from "../../../../../../../../../../apiMocks/mockData";
-import { Shell } from "../../../../../../../Shell";
+import { Shell } from "../../../../../../../Shell/Shell";
 import { getL10n } from "../../../../../../../../../functions/l10n/storybookAndJest";
 import { LeakedPasswordsLayout } from "../LeakedPasswordsLayout";
 import {
@@ -15,6 +16,8 @@ import {
   leakedPasswordTypes,
 } from "../leakedPasswordsData";
 import { BreachDataTypes } from "../../../../../../../../../functions/universal/breach";
+import { defaultExperimentData } from "../../../../../../../../../../telemetry/generated/nimbus/experiments";
+import { UserAnnouncementWithDetails } from "../../../../../../../../../../db/tables/user_announcements";
 
 const user = createUserWithPremiumSubscription();
 
@@ -63,13 +66,20 @@ const LeakedPasswordsWrapper = (props: {
     );
   }
 
+  const mockedAnnouncements: UserAnnouncementWithDetails[] = [
+    createRandomAnnouncement(),
+    createRandomAnnouncement(),
+    createRandomAnnouncement(),
+  ];
   return (
     <Shell
       l10n={getL10n()}
       session={mockedSession}
       nonce=""
       countryCode="nl"
-      howItWorksFlagEnabled
+      enabledFeatureFlags={[]}
+      experimentData={defaultExperimentData["Features"]}
+      announcements={mockedAnnouncements}
     >
       <LeakedPasswordsLayout
         subscriberEmails={[]}
@@ -81,6 +91,7 @@ const LeakedPasswordsWrapper = (props: {
           user: mockedSession.user,
         }}
         isEligibleForPremium={true}
+        enabledFeatureFlags={[]}
       />
     </Shell>
   );

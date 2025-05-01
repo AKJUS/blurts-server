@@ -19,8 +19,19 @@ interface ComboBoxProps extends ComboBoxStateOptions<object> {
   listPlaceholder?: ReactElement;
 }
 
-function ComboBox(props: ComboBoxProps) {
-  const { errorMessage, isInvalid, isRequired, label, listPlaceholder } = props;
+function ComboBox(
+  props: ComboBoxProps & {
+    hasFloatingLabel?: boolean;
+  },
+) {
+  const {
+    errorMessage,
+    isInvalid,
+    isRequired,
+    label,
+    listPlaceholder,
+    placeholder,
+  } = props;
   const inputRef = useRef(null);
   const listBoxRef = useRef(null);
   const popoverRef = useRef(null);
@@ -38,9 +49,6 @@ function ComboBox(props: ComboBoxProps) {
   const l10n = useL10n();
 
   useEffect(() => {
-    /* c8 ignore next 5 */
-    // This does get hit by unit tests, but for some reason, since the Node
-    // 20.10 upgrade, it (and this comment) no longer gets marked as such:
     if (inputProps.value === "") {
       state.close();
     }
@@ -49,30 +57,24 @@ function ComboBox(props: ComboBoxProps) {
   return (
     <>
       <div className={inputFieldStyles.comboBox}>
-        <label {...labelProps} className={inputFieldStyles.inputLabel}>
+        <label
+          {...labelProps}
+          className={
+            props.hasFloatingLabel
+              ? inputFieldStyles.floatingLabel
+              : inputFieldStyles.inputLabel
+          }
+        >
           {label}
-          {isRequired ? (
-            <span aria-hidden="true">*</span>
-          ) : (
-            /* c8 ignore next 4 */
-            // This does get hit by unit tests, but for some reason, since the
-            // Node 20.10 upgrade, it (and this comment) no longer gets marked
-            // as such:
-            ""
-          )}
+          {isRequired ? <span aria-hidden="true">*</span> : ""}
         </label>
         <input
           {...inputProps}
           ref={inputRef}
           className={`${inputFieldStyles.inputField} ${
-            !inputProps.value
-              ? /* c8 ignore next 4 */
-                // This does get hit by unit tests, but for some reason, since
-                // the Node 20.10 upgrade, it (and this comment) no longer gets
-                // marked as such:
-                inputFieldStyles.noValue
-              : ""
+            !inputProps.value ? inputFieldStyles.noValue : ""
           } ${isInvalid ? /* c8 ignore next */ inputFieldStyles.hasError : ""}`}
+          placeholder={placeholder ?? ""}
         />
         {isInvalid && typeof errorMessage === "string" && (
           <div {...errorMessageProps} className={inputFieldStyles.inputMessage}>
@@ -83,7 +85,6 @@ function ComboBox(props: ComboBoxProps) {
           </div>
         )}
       </div>
-
       {state.isOpen && (
         <Popover
           offset={8}

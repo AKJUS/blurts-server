@@ -1,0 +1,48 @@
+@use "../../../../../../../tokens";
+
+.panel {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: tokens.$layout-xs;
+  width: 100%;
+
+  hr {
+    border-style: none;
+    border-top: 1px solid tokens.$color-grey-10;
+    width: 100%;
+  }
+
+  h3 {
+    font: tokens.$text-body-xl;
+    font-weight: 600;
+
+    & + p {
+      color: tokens.$color-grey-40;
+      font: tokens.$text-body-md;
+    }
+  }
+
+  section {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    gap: tokens.$spacing-xs;
+    width: 100%;
+
+    h4 {
+      font: tokens.$text-body-lg;
+      font-weight: 600;
+    }
+
+    p {
+      color: tokens.$color-grey-40;
+      font-weight: 400;
+
+      @media screen and (min-width: tokens.$content-md) {
+        padding-right: tokens.$layout-xl;
+      }
+    }
+  }
+}

@@ -2,36 +2,41 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React from "react";
-import { OnerepScanResultRow, SubscriberRow } from "knex/types/tables";
+import {
+  OnerepScanResultDataBrokerRow,
+  OnerepScanResultRow,
+  SubscriberRow,
+} from "knex/types/tables";
 import {
   getPotentialSubscribersWaitingForFirstDataBrokerRemovalFixedEmail,
   markFirstDataBrokerRemovalFixedEmailAsJustSent,
 } from "../../db/tables/subscribers";
-import { initEmail, sendEmail } from "../../utils/email";
+import { initEmail, sendEmail, closeEmailPool } from "../../utils/email";
 import { renderEmail } from "../../emails/renderEmail";
 import { FirstDataBrokerRemovalFixed } from "../../emails/templates/firstDataBrokerRemovalFixed/FirstDataBrokerRemovalFixed";
-import { getEmailL10n } from "../../app/functions/l10n/cronjobs";
+import { getCronjobL10n } from "../../app/functions/l10n/cronjobs";
 import { sanitizeSubscriberRow } from "../../app/functions/server/sanitize";
 import { refreshStoredScanResults } from "../../app/functions/server/refreshStoredScanResults";
-import { getLatestOnerepScanResults } from "../../db/tables/onerep_scans";
+import { getScanResultsWithBroker } from "../../db/tables/onerep_scans";
+import { hasPremium } from "../../app/functions/universal/user";
+import { logger } from "../../app/functions/server/logging";
 
 type SubscriberFirstRemovedScanResult = {
   subscriber: SubscriberRow;
-  firstRemovedScanResult: OnerepScanResultRow;
+  firstRemovedScanResult: OnerepScanResultDataBrokerRow;
 };
 
-function isFulfilledResult(
-  result: PromiseSettledResult<SubscriberFirstRemovedScanResult | undefined>,
-): result is PromiseFulfilledResult<SubscriberFirstRemovedScanResult> {
-  return (
-    typeof result !== "undefined" &&
-    result.status === "fulfilled" &&
-    typeof result.value !== "undefined"
-  );
-}
+process.on("SIGINT", () => {
+  logger.info("SIGINT received, exiting...");
+  tearDown();
+});
 
 void run();
+
+function tearDown() {
+  closeEmailPool();
+  process.exit(0);
+}
 
 async function run() {
   const batchSize = Number.parseInt(
@@ -55,8 +60,9 @@ async function run() {
           if (subscriber.onerep_profile_id !== null) {
             await refreshStoredScanResults(subscriber.onerep_profile_id);
           }
-          const latestScan = await getLatestOnerepScanResults(
+          const latestScan = await getScanResultsWithBroker(
             subscriber.onerep_profile_id,
+            hasPremium(subscriber),
           );
 
           let firstRemovedScanResult = null;
@@ -83,7 +89,7 @@ async function run() {
           }
 
           return { subscriber, firstRemovedScanResult };
-        } catch (_error) {
+        } catch {
           console.error(
             `An error ocurred while attemting to get the first removed scan result for subscriber: ${subscriber.id}`,
           );
@@ -104,9 +110,12 @@ async function run() {
       );
     }),
   );
+
   console.log(
     `[${new Date(Date.now()).toISOString()}] Sent [${subscribersToEmailWithData.length}] first data broker removal fixed emails.`,
   );
+
+  tearDown();
 }
 
 async function sendFirstDataBrokerRemovalFixedActivityEmail(
@@ -114,7 +123,7 @@ async function sendFirstDataBrokerRemovalFixedActivityEmail(
   scanResult: OnerepScanResultRow,
 ) {
   const sanitizedSubscriber = sanitizeSubscriberRow(subscriber);
-  const l10n = getEmailL10n(sanitizedSubscriber);
+  const l10n = getCronjobL10n(sanitizedSubscriber);
 
   let subject = l10n.getString("email-first-broker-removal-fixed-subject");
 
@@ -125,7 +134,7 @@ async function sendFirstDataBrokerRemovalFixedActivityEmail(
   await sendEmail(
     sanitizedSubscriber.primary_email,
     subject,
-    renderEmail(
+    await renderEmail(
       <FirstDataBrokerRemovalFixed
         data={{
           dataBrokerName: scanResult.data_broker,
@@ -135,5 +144,15 @@ async function sendFirstDataBrokerRemovalFixedActivityEmail(
         l10n={l10n}
       />,
     ),
+  );
+}
+
+function isFulfilledResult(
+  result: PromiseSettledResult<SubscriberFirstRemovedScanResult | undefined>,
+): result is PromiseFulfilledResult<SubscriberFirstRemovedScanResult> {
+  return (
+    typeof result !== "undefined" &&
+    result.status === "fulfilled" &&
+    typeof result.value !== "undefined"
   );
 }

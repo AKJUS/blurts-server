@@ -1,4 +1,7 @@
 name: Monitor Cron e2e Tests
+
+permissions: {}
+
 on:
   schedule:
     - cron: '0 8 * * *'
@@ -19,9 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.3
+          node-version: 20.19.x
 
       - name: Install dependencies
         run: npm ci
@@ -44,8 +49,8 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests - ${{ inputs.environment != null && inputs.environment || 'stage' }}
-        if: github.actor != 'dependabot[bot]'
-        run: npm run e2e
+        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        run: npm run e2e -- --workers=1 --update-snapshots
         timeout-minutes: 40
         env:
           E2E_TEST_ENV: ${{ inputs.environment != null && inputs.environment || 'stage' }}
@@ -63,6 +68,7 @@ jobs:
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           HIBP_KANON_API_TOKEN: ${{ secrets.HIBP_KANON_API_TOKEN }}
           HIBP_API_TOKEN: ${{ secrets.HIBP_API_TOKEN }}
+          REDIS_URL: "redis://redis.mock"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -75,12 +81,14 @@ jobs:
           name: test-results
           path: src/e2e/test-results/
           retention-days: 30
-          
+
       - name: Send GitHub Action trigger data to Slack workflow
         id: slack
-        uses: slackapi/slack-github-action@v1.26.0
+        uses: slackapi/slack-github-action@v2.0.0
         if: failure() && github.ref == 'refs/heads/main'
         with:
+          webhook: ${{ secrets.SLACK_GHA_FAILURES_WEBHOOK }}
+          webhook-type: webhook-trigger
           # For posting a message using Block Kit
           payload: |
             {
@@ -123,7 +131,3 @@ jobs:
                 }
               ]
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_GHA_FAILURES_WEBHOOK }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-          

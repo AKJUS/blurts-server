@@ -8,13 +8,13 @@ import { NextResponse } from "next/server";
 import { logger } from "../../../../../functions/server/logging";
 
 import { getServerSession } from "../../../../../functions/server/getServerSession";
-import AppConstants from "../../../../../../appConstants";
 import {
   getOnerepProfileId,
   getSubscriberByFxaUid,
 } from "../../../../../../db/tables/subscribers";
 
-import { getLatestOnerepScanResults } from "../../../../../../db/tables/onerep_scans";
+import { getScanResultsWithBroker } from "../../../../../../db/tables/onerep_scans";
+import { hasPremium } from "../../../../../functions/universal/user";
 
 export type WelcomeScanResultResponse =
   | {
@@ -35,7 +35,10 @@ export async function GET() {
       }
       const profileId = await getOnerepProfileId(subscriber.id);
 
-      const scanResults = await getLatestOnerepScanResults(profileId);
+      const scanResults = await getScanResultsWithBroker(
+        profileId,
+        hasPremium(session.user),
+      );
       return NextResponse.json(
         { success: true, scan_results: scanResults },
         { status: 200 },
@@ -45,7 +48,6 @@ export async function GET() {
       return NextResponse.json({ success: false }, { status: 500 });
     }
   } else {
-    // Not Signed in, redirect to home
-    return NextResponse.redirect(AppConstants.SERVER_URL, 302);
+    return NextResponse.json({ success: false }, { status: 401 });
   }
 }

@@ -18,19 +18,24 @@ import {
   StepLink,
 } from "../../../../../../../functions/server/getRelevantGuidedSteps";
 import { useTelemetry } from "../../../../../../../hooks/useTelemetry";
+import { TelemetryButton } from "../../../../../../../components/client/TelemetryButton";
+import { FeatureFlagName } from "../../../../../../../../db/tables/featureFlags";
 
 export type FixViewProps = {
   children: ReactNode;
   subscriberEmails: string[];
   data: StepDeterminationData;
-  nextStep: StepLink;
+  nextStep: StepLink | (() => void);
   currentSection:
     | "data-broker-profiles"
     | "high-risk-data-breach"
     | "leaked-passwords"
     | "security-recommendations";
   hideProgressIndicator?: boolean;
+  hideNavClose?: boolean;
+  hideNextNavigationRightArrow?: boolean;
   showConfetti?: boolean;
+  enabledFeatureFlags: FeatureFlagName[];
 };
 
 export const FixView = (props: FixViewProps) => {
@@ -71,13 +76,7 @@ export const FixView = (props: FixViewProps) => {
       {props.showConfetti && <Confetti />}
       <div
         className={`${styles.fixWrapper} ${
-          isResolutionLayout
-            ? styles.highRiskDataBreachContentBg
-            : /* c8 ignore next 4 */
-              // Since the Node 20.10 upgrade, it's been intermittently marking
-              // this (and this comment) as uncovered, even though I think it's
-              // covered by tests.
-              ""
+          isResolutionLayout ? styles.highRiskDataBreachContentBg : ""
         }`}
       >
         {!props.hideProgressIndicator && (
@@ -88,25 +87,53 @@ export const FixView = (props: FixViewProps) => {
             label={l10n.getString(
               "guided-resolution-flow-step-navigation-label",
             )}
+            enabledFeatureFlags={props.enabledFeatureFlags}
           />
         )}
-        {navigationClose()}
+        {!props.hideNavClose && navigationClose()}
         <section className={styles.fixSection}>
           <div className={styles.viewWrapper}>{props.children}</div>
-          <Link
-            className={`${styles.navArrow} ${styles.navArrowNext}`}
-            href={props.nextStep.href}
-            aria-label={l10n.getString("guided-resolution-flow-next-arrow")}
-            onClick={() => {
-              recordTelemetry("button", "click", {
-                button_id: "next_arrow",
-              });
-            }}
-          >
-            <Image alt="" src={ImageArrowRight} />
-          </Link>
+          {!props.hideNextNavigationRightArrow &&
+            (isNextStepALink(props.nextStep) ? (
+              <Link
+                className={`${styles.navArrow} ${styles.navArrowNext}`}
+                href={props.nextStep.href}
+                aria-label={l10n.getString("guided-resolution-flow-next-arrow")}
+                onClick={() => {
+                  recordTelemetry("button", "click", {
+                    button_id: "next_arrow",
+                  });
+                }}
+              >
+                <Image alt="" src={ImageArrowRight} />
+              </Link>
+            ) : (
+              <TelemetryButton
+                className={`${styles.navArrow} ${styles.navArrowNext}`}
+                event={{
+                  module: "button",
+                  name: "click",
+                  data: {
+                    button_id: "go_to_next_result",
+                  },
+                }}
+                variant="link"
+                onPress={props.nextStep}
+                aria-label={l10n.getString(
+                  "guided-resolution-flow-next-arrow-sub-step",
+                )}
+              >
+                <Image alt="" src={ImageArrowRight} />
+              </TelemetryButton>
+            ))}
         </section>
       </div>
     </div>
   );
 };
+
+function isNextStepALink(
+  nextStep: StepLink | (() => void),
+): nextStep is StepLink {
+  return "href" in nextStep;
+}

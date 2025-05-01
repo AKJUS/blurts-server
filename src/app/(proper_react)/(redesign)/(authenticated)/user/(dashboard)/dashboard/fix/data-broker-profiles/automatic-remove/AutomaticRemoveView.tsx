@@ -32,6 +32,7 @@ import {
   useRadioGroup,
 } from "react-aria";
 import { VisuallyHidden } from "../../../../../../../../../components/server/VisuallyHidden";
+import { FeatureFlagName } from "../../../../../../../../../../db/tables/featureFlags";
 
 export type Props = Omit<ComponentProps<typeof FixView>, "children"> & {
   monthlySubscriptionUrl: string;
@@ -40,6 +41,7 @@ export type Props = Omit<ComponentProps<typeof FixView>, "children"> & {
     yearly: number;
     monthly: number;
   };
+  enabledFeatureFlags: FeatureFlagName[];
 };
 
 const RadioContext = createContext<RadioGroupState | null>(null);
@@ -248,18 +250,20 @@ export function AutomaticRemoveView(props: Props) {
                     )}
               </span>
               <Button
-                variant="primary"
+                variant="secondary"
                 /* c8 ignore start */
                 onPress={() => {
-                  selectedPlanIsYearly
-                    ? recordTelemetry("upgradeIntent", "click", {
-                        button_id:
-                          "intent_to_purchase_yearly_plan_guided_experience",
-                      })
-                    : recordTelemetry("upgradeIntent", "click", {
-                        button_id:
-                          "intent_to_purchase_monthly_plan_guided_experience",
-                      });
+                  if (selectedPlanIsYearly) {
+                    recordTelemetry("upgradeIntent", "click", {
+                      button_id:
+                        "intent_to_purchase_yearly_plan_guided_experience",
+                    });
+                  } else {
+                    recordTelemetry("upgradeIntent", "click", {
+                      button_id:
+                        "intent_to_purchase_monthly_plan_guided_experience",
+                    });
+                  }
                 }}
                 /* c8 ignore stop */
                 href={

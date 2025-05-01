@@ -2,52 +2,42 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Firefox Monitor is a product name and should not be translated.
--product-name = Firefox Monitor
-# Firefox is a brand name and should not be translated.
--brand-name = Firefox
 
+## Email headers
+
+email-header-logo-alt = { -brand-mozilla-monitor }
+email-header-button-sign-in = Iniciar sesión
+
+## Email footers
+
+email-footer-support-heading = ¿Preguntas sobre { -brand-mozilla-monitor }?
+email-footer-support-content = Visitá nuestro <support-link>Centro de asistencia</support-link> para obtener ayuda
+email-footer-trigger-transactional = Recibís este correo porque te suscribiste a { -brand-mozilla-monitor }.
+email-footer-source-hibp = Datos de filtración proporcionados por <hibp-link>{ -brand-HIBP }</hibp-link>
+email-footer-logo-mozilla-alt = { -brand-mozilla }
+email-footer-meta-privacy-notice = Privacidad
 # Firefox Relay is a product name and should not be translated.
 -product-name-relay = Firefox Relay
 # Mozilla VPN is a product name and should not be translated.
 -product-name-vpn = Mozilla VPN
-
 # A link to legal information about mozilla products.
 legal = Legal
-
-# Unsubscribe link in email.
-email-unsub-link = Cancelar suscripción
-
-# This string appears in the footer of breach report and breach alert emails.
-# { $unsubLink } is a link to the user's dashboard where they can unsubscribe from Monitor
-# and uses the text from { email-unsub-link }. { $faqLink } is a link to the 
-# Firefox Monitor SUMO page and uses the text from { frequently-asked-questions }.
-email-footer-blurb = Estás recibiendo este correo electrónico porque te registraste en alerteas de { -product-name } ¿No querés recibir más estos correos? { $unsubLink }. Este es un correo electrónico automatizado. Buscá ayuda en  { $faqLink }.
-
 # Button text
 verify-email-cta = Verificar correo electrónico
-
 # Headline of verification email
 email-link-expires = Este enlace vence en 24 horas.
-
-## Variables:
-##   $userEmail (string) - User email address
 
 ##
 
 # Subject line of email
 email-subject-found-breaches = { -product-name } encontró tu información en estas filtraciones
-
 # Subject line of email
 email-subject-no-breaches = { -product-name } no encontró filtraciones conocidas
-
 # Subject line of email
 email-subject-verify = Verificá tu correo electrónico para { -product-name }
-
 fxm-warns-you-no-breaches =
-    { -product-name } te advierte sobre filtraciones de datos relacionadas con tu información personal.
-    Hasta el momento, no se encontraron infracciones. Te enviaremos un alerta si tu dirección de correo electrónico aparece en una nueva filtración.
-
+    { -product-name } te advierte sobre filtraciones de datos involucrados con tu información personal.
+    Hasta ahora, no se encontraron infracciones. Te enviaremos una alerta si tu dirección de correo electrónico aparece en una nueva filtración.
 email-breach-alert-blurb =
     { -product-name } te advierte sobre filtraciones de datos relacionadas con tu información personal.
     Recién recibimos detalles sobre la filtración de datos de otra empresa.
@@ -55,28 +45,9 @@ email-breach-alert-blurb =
 ## 2022 email template. HTML tags should not be translated, e.g. `<a>`
 
 # Have I Been Pwned attribution
+# Variables:
+#   $hibp-link-attr (String) - Link to Have I Been Pwned
 email-2022-hibp-attribution = Datos de filtración provistos por <a { $hibp-link-attr }>{ -brand-HIBP }</a>
-
-## Monthly email for unresolved breaches. HTML tags should not be translated, e.g. `<br>`
-
-## Monthly email for unresolved breaches. HTML tags should not be translated, e.g. `<br>`
-## Variables:
-##   $email-address (string) - Email address
-
-email-unresolved-heading = Tenés filtraciones sin resolver
-email-unresolved-subhead = Tu correo electrónico ha sido expuesto. <br>Arreglalo ya mismo  con { -product-name }.
-email-is-affected = Tu correo electrónico, { $email-address }, está afectado por al menos una filtración de datos
-email-more-detail = Iniciá sesión en { -product-name } ahora para ver más detalles sobre tus filtraciones (incluido cuándo ocurrieron y qué datos se expusieron) y aprendé qué se debe hacer cuando tu correo electrónico ha sido expuesto en una filtración de datos.
-email-breach-status = Estado actual de filtración
-# table row 1 label
-email-monitored = Total de correos electrónicos monitoreados:
-# table row 2 label
-email-breach-total = Número total de filtraciones:
-# table row 3 label
-email-resolved = Filtraciones resueltas:
-# table row 4 label
-email-unresolved = Filtraciones sin resolver:
-email-resolve-cta = Resolver filtraciones
 
 ## Verification email
 
@@ -86,14 +57,21 @@ email-verify-simply-click = Simplemente hacé clic en el enlace a continuación 
 
 ## Breach report
 
-## Breach report
-## Variables:
-##   $email-address (string) - Email address
-
 email-breach-summary = Acá está el resumen de tu filtración de datos
+# Variables:
+#   $email-address (string) - Email address, bolded
 email-breach-detected = Los resultados de búsqueda de tu cuenta { $email-address } han detectado que tu correo electrónico puede haber sido expuesto. Te recomendamos que actués ahora para resolver esta filtración.
 email-dashboard-cta = Ir al panel de control
 
-## Breach alert
+## Breach alert email
 
-email-spotted-new-breach = Hemos detectado una nueva filtración de datos
+email-breach-alert-all-subject = Nueva filtración de datos detectada
+email-breach-alert-all-preview = Te guiaremos paso a paso para resolverlo.
+email-breach-alert-all-hero-heading = Estuviste en una nueva filtración de datos
+email-breach-alert-all-hero-subheading = No te preocupés, podemos ayudarte a resolver esta exposición
+email-breach-alert-all-lead = { -brand-mozilla-monitor } descubrió la siguiente filtración de datos que incluye tu información personal:
+email-breach-alert-all-source-title = Fuente de la filtración:
+email-breach-alert-all-data-points-title = Tus datos expuestos:
+email-breach-alert-all-next-steps-lead = Te guiaremos paso a paso sobre cómo resolver esta filtración de datos.
+email-breach-alert-all-next-steps-cta-label = Empecemos
+email-breach-alert-all-next-steps-button-dashboard = Ir al panel de control

@@ -13,10 +13,10 @@ import { BreachLogo } from "../../../../components/server/BreachLogo";
 import { getLocale } from "../../../../functions/universal/getLocale";
 import { useHasRenderedClientSide } from "../../../../hooks/useHasRenderedClientSide";
 import { memo, useMemo, useState, useTransition } from "react";
-import { Breach } from "../../../../functions/universal/breach";
+import { SearchIcon } from "../../../../components/server/Icons";
 
 export type Props = {
-  allBreaches: Array<HibpLikeDbBreach | Breach>;
+  allBreaches: HibpLikeDbBreach[];
 };
 export const BreachIndexView = (props: Props) => {
   const l10n = useL10n();
@@ -26,7 +26,7 @@ export const BreachIndexView = (props: Props) => {
   return (
     <main className={styles.wrapper}>
       <header>
-        <h1>{l10n.getString("all-breaches-headline-2")}</h1>
+        <h1>{l10n.getString("all-breaches-headline-3")}</h1>
         <p>{l10n.getString("all-breaches-lead")}</p>
         <FilterForm
           onChange={(term: string) => {
@@ -59,23 +59,27 @@ const FilterForm = (props: { onChange: (newValue: string) => void }) => {
 
   return (
     <form className={styles.filterForm} aria-hidden={!hasRenderedClientSide}>
-      <label htmlFor="filterTerm">{l10n.getString("search-breaches")}</label>
-      <input
-        onChange={(e) => {
-          setFilterTerm(e.target.value);
-          props.onChange(e.target.value);
-        }}
-        value={filterTerm}
-        type="search"
-        name="filterTerm"
-        id="filterTerm"
-      />
+      <div className={styles.control}>
+        <label htmlFor="filterTerm">
+          <SearchIcon alt={l10n.getString("search-breaches")} />
+        </label>
+        <input
+          onChange={(e) => {
+            setFilterTerm(e.target.value);
+            props.onChange(e.target.value);
+          }}
+          value={filterTerm}
+          type="search"
+          name="filterTerm"
+          id="filterTerm"
+        />
+      </div>
     </form>
   );
 };
 
 function matchesFilter(
-  breach: Breach | HibpLikeDbBreach,
+  breach: HibpLikeDbBreach,
   filterTerm: string,
   l10n: ExtendedReactLocalization,
 ): boolean {
@@ -95,7 +99,7 @@ function matchesFilter(
 // time the filter changes, like the current page, is exactly what React isn't
 // great at. memo() alleviates it somewhat, though.
 const BreachCard = memo(
-  (props: { breach: HibpLikeDbBreach | Breach; isVisible: boolean }) => {
+  (props: { breach: HibpLikeDbBreach; isVisible: boolean }) => {
     const l10n = useL10n();
     const locale = getLocale(l10n);
     // Performance profiling shows that formatting the date is pretty expensive,

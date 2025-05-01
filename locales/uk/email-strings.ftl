@@ -2,25 +2,26 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Firefox Monitor is a product name and should not be translated.
--product-name = Firefox Monitor
-# Firefox is a brand name and should not be translated.
--brand-name = Firefox
+
+## Email headers
+
+email-header-logo-alt = { -brand-mozilla-monitor }
+email-header-button-sign-in = Увійти
+
+## Email footers
+
+email-footer-support-heading = Запитання про { -brand-mozilla-monitor }?
+email-footer-support-content = Щоб отримати допомогу, відвідайте наш <support-link>Центр підтримки</support-link>
+email-footer-trigger-transactional = Ви отримали цей електронний лист, оскільки підписалися на { -brand-mozilla-monitor }.
+email-footer-source-hibp = Інформацію про витоки даних надає <hibp-link>{ -brand-HIBP }</hibp-link>
+email-footer-logo-mozilla-alt = { -brand-mozilla }
+email-footer-meta-privacy-notice = Приватність
 # Firefox Relay is a product name and should not be translated.
 -product-name-relay = Firefox Relay
 # Mozilla VPN is a product name and should not be translated.
 -product-name-vpn = Mozilla VPN
 # A link to legal information about mozilla products.
 legal = Правові положення
-# Unsubscribe link in email.
-email-unsub-link = Відписатися
-# This string appears in the footer of breach report and breach alert emails.
-# { $unsubLink } is a link to the user's dashboard where they can unsubscribe from Monitor
-# and uses the text from { email-unsub-link }. { $faqLink } is a link to the
-# Firefox Monitor SUMO page and uses the text from { frequently-asked-questions }.
-email-footer-blurb =
-    Ви отримали цей лист, тому що ви підписалися на сповіщення від { -product-name }.
-    Більше не хочете отримувати такі повідомлення? { $unsubLink }. Це автоматичний електронний лист. Для отримання допомоги, відвідайте { $faqLink }.
 # Button text
 verify-email-cta = Підтвердити адресу е-пошти
 # Headline of verification email
@@ -48,25 +49,6 @@ email-breach-alert-blurb =
 #   $hibp-link-attr (String) - Link to Have I Been Pwned
 email-2022-hibp-attribution = Інформація про витоки даних надається <a { $hibp-link-attr }>{ -brand-HIBP }</a>
 
-## Monthly email for unresolved breaches. HTML tags should not be translated, e.g. `<br>`
-## Variables:
-##   $email-address (string) - Email address
-
-email-unresolved-heading = У вас є нерозв'язані витоки
-email-unresolved-subhead = Вашу електронну адресу було розкрито. <br>Виправте це негайно за допомогою { -product-name }.
-email-is-affected = Ваша електронна адреса { $email-address } помічена принаймні в одному витоці даних
-email-more-detail = Увійдіть у { -product-name } зараз, щоб переглянути докладніші відомості про ваші витоки (зокрема, коли вони сталися та які дані було розкрито), а також дізнатися, що робити, якщо вашу електронну адресу виявлено у витоці даних.
-email-breach-status = Поточний стан витоку
-# table row 1 label
-email-monitored = Загальна кількість відстежуваних електронних адрес:
-# table row 2 label
-email-breach-total = Загальна кількість витоків:
-# table row 3 label
-email-resolved = Розв'язані витоки:
-# table row 4 label
-email-unresolved = Нерозв'язані витоки:
-email-resolve-cta = Розв'язати витоки
-
 ## Verification email
 
 email-verify-heading = Захистіть свої дані прямо зараз
@@ -74,13 +56,22 @@ email-verify-subhead = Підтвердьте адресу електронно�
 email-verify-simply-click = Просто натисніть посилання нижче, щоб завершити перевірку.
 
 ## Breach report
-## Variables:
-##   $email-address (string) - Email address
 
 email-breach-summary = Ось стислий огляд ваших витоків даних
+# Variables:
+#   $email-address (string) - Email address, bolded
 email-breach-detected = Результати пошуку для вашого облікового запису { $email-address } виявили, що вашу електронну адресу могли розкрити. Ми радимо діяти зараз, щоб усунути цю проблему.
 email-dashboard-cta = Перейти до панелі стану
 
-## Breach alert
+## Breach alert email
 
-email-spotted-new-breach = Ми помітили новий витік даних
+email-breach-alert-all-subject = Виявлено новий витік даних
+email-breach-alert-all-preview = Ми допоможемо вам це виправити.
+email-breach-alert-all-hero-heading = Ваші дані потрапили до нового витоку
+email-breach-alert-all-hero-subheading = Не хвилюйтеся, ми можемо допомогти вам вирішити цю проблему
+email-breach-alert-all-lead = { -brand-mozilla-monitor } виявив витік даних, що містить вашу особисту інформацію:
+email-breach-alert-all-source-title = Джерело витоку:
+email-breach-alert-all-data-points-title = Ваші розкриті дані:
+email-breach-alert-all-next-steps-lead = Ми допоможемо вам покроково усунути наслідки цього витоку даних.
+email-breach-alert-all-next-steps-cta-label = Розпочнімо
+email-breach-alert-all-next-steps-button-dashboard = Перейти до панелі стану

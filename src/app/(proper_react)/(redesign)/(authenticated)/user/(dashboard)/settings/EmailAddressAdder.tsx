@@ -4,8 +4,13 @@
 
 "use client";
 
-import { ChangeEvent, useEffect, useState } from "react";
-import { useFormState } from "react-dom";
+import {
+  ChangeEvent,
+  useEffect,
+  useRef,
+  useState,
+  useActionState,
+} from "react";
 import { useOverlayTriggerState } from "react-stately";
 import { useOverlayTrigger } from "react-aria";
 import Image from "next/image";
@@ -15,11 +20,15 @@ import { Button } from "../../../../../../components/client/Button";
 import { useL10n } from "../../../../../../hooks/l10n";
 import { ModalOverlay } from "../../../../../../components/client/dialog/ModalOverlay";
 import { Dialog } from "../../../../../../components/client/dialog/Dialog";
-import { onAddEmail } from "./actions";
+import { type onAddEmail } from "./actions";
 import { CONST_MAX_NUM_ADDRESSES } from "../../../../../../../constants";
 import { useTelemetry } from "../../../../../../hooks/useTelemetry";
 
-export const EmailAddressAdder = () => {
+export type Props = {
+  onAddEmail: typeof onAddEmail;
+};
+
+export const EmailAddressAdder = (props: Props) => {
   const l10n = useL10n();
   const recordTelemetry = useTelemetry();
   const dialogState = useOverlayTriggerState({
@@ -68,7 +77,7 @@ export const EmailAddressAdder = () => {
             onDismiss={() => dialogState.close()}
           >
             <div className={styles.dialogContents}>
-              <EmailAddressAddForm />
+              <EmailAddressAddForm {...props} />
             </div>
           </Dialog>
         </ModalOverlay>
@@ -81,41 +90,48 @@ export const EmailAddressAdder = () => {
 // `useFormState`. See the comment for the test
 // "calls the 'add' action when adding another email address":
 /* c8 ignore start */
-const EmailAddressAddForm = () => {
+const EmailAddressAddForm = (props: Props) => {
   const l10n = useL10n();
   const recordTelemetry = useTelemetry();
-  const [formState, formAction] = useFormState(onAddEmail, {});
+  const formRef = useRef<HTMLFormElement>(null);
+  const [onAddEmailState, onAddEmailAction] = useActionState(
+    props.onAddEmail,
+    {},
+  );
   const [hasPressedButton, setHasPressedButton] = useState(false);
   const [email, setEmail] = useState("");
+  const [isEmailValid, setIsEmailValid] = useState(false);
 
   useEffect(() => {
-    if (typeof formState.success !== "undefined") {
+    setIsEmailValid(
+      email.length > 0 && (formRef.current?.reportValidity() ?? false),
+    );
+  }, [email]);
+
+  useEffect(() => {
+    if (typeof onAddEmailState.success !== "undefined") {
       recordTelemetry("ctaButton", "click", {
         button_id: "add_email_verification",
       });
     }
-  }, [formState, recordTelemetry]);
+  }, [onAddEmailState, recordTelemetry]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
 
-  const isEmailValid = () => {
-    // Regex for checking email format
-    // ensuring it contains a local part, an "@" symbol,
-    // and a domain part.
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  return !formState.success ? (
+  return !onAddEmailState.success ? (
     <>
       <p>
         {l10n.getString("add-email-your-account-includes", {
           total: CONST_MAX_NUM_ADDRESSES,
         })}
       </p>
-      <form action={formAction} className={styles.newEmailAddressForm}>
+      <form
+        action={onAddEmailAction}
+        ref={formRef}
+        className={styles.newEmailAddressForm}
+      >
         <label htmlFor="newEmailAddress">
           {l10n.getString("add-email-address-input-label")}
         </label>
@@ -129,9 +145,11 @@ const EmailAddressAddForm = () => {
           type="submit"
           variant="primary"
           className={styles.btn}
-          disabled={!isEmailValid()}
+          disabled={!isEmailValid}
           onPress={() => {
-            setHasPressedButton(true);
+            if (isEmailValid) {
+              setHasPressedButton(true);
+            }
           }}
           isLoading={hasPressedButton}
         >
@@ -142,7 +160,7 @@ const EmailAddressAddForm = () => {
   ) : (
     <p className={styles.description}>
       {l10n.getFragment("add-email-verify-the-link-2", {
-        vars: { email: formState.submittedAddress },
+        vars: { email: onAddEmailState.submittedAddress },
         elems: { b: <b /> },
       })}
     </p>

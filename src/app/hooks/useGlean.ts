@@ -4,80 +4,61 @@
 
 "use client";
 
-import { useContext, useEffect } from "react";
-import Glean from "@mozilla/glean/web";
+import { useCallback } from "react";
 import EventMetricType from "@mozilla/glean/private/metrics/event";
 import type { GleanMetricMap } from "../../telemetry/generated/_map";
-import { PublicEnvContext } from "../../contextProviders/public-env";
 import { useSession } from "next-auth/react";
 import { hasPremium } from "../functions/universal/user";
+import { useExperiments } from "../../contextProviders/experiments";
 
-export const useGlean = (experimentationId?: string) => {
-  const { PUBLIC_APP_ENV } = useContext(PublicEnvContext);
-
+export const useGlean = () => {
   const session = useSession();
+  const experiments = useExperiments();
+  // Telemetry recording is mocked in our unit tests, therefore we
+  // do not have test coverage for this method.
+  /* c8 ignore start */
   const isPremiumUser = hasPremium(session.data?.user);
+  const record = useCallback(
+    async <
+      EventModule extends keyof GleanMetricMap,
+      EventName extends keyof GleanMetricMap[EventModule],
+    >(
+      eventModule: EventModule,
+      event: keyof GleanMetricMap[EventModule],
+      data: GleanMetricMap[EventModule][EventName],
+    ) => {
+      const mod = (await import(
+        `../../telemetry/generated/${eventModule}`
+      )) as Record<keyof GleanMetricMap[EventModule], EventMetricType>;
+      // Instead of the specific type definitions we generated in the npm script
+      // `build-glean-types`, Glean takes a non-specific "ExtraArgs" type as
+      // parameter to `record`.
 
-  // Initialize Glean only on the first render of our custom hook.
-  useEffect(() => {
-    // Enable upload only if the user has not opted out of tracking.
-    const uploadEnabled =
-      navigator.doNotTrack !== "1" ||
-      document.location.hostname === "localhost";
+      // Record the `plan_tier` key on all events.
+      // `plan_tier` is set on every metric, but it's too much work for TypeScript
+      // to infer that — hence the type assertion.
+      (data as GleanMetricMap["button"]["click"]).plan_tier = isPremiumUser
+        ? "Plus"
+        : "Free";
 
-    if (!PUBLIC_APP_ENV) {
-      throw new ErrorEvent("No PUBLIC_APP_ENV provided for Glean");
-    }
+      // Record the `nimbus_*` keys on all events.
+      // `nimbus_*` is set on every metric, but it's too much work for TypeScript
+      // to infer that — hence the type assertion.
+      if (experiments === null) {
+        console.warn(
+          "`useGlean` is used in a component that is not a (grand)child of <ExperimentsProvider>",
+        );
+      } else {
+        (data as GleanMetricMap["button"]["click"]).nimbus_user_id =
+          experiments.experimentationId;
+      }
 
-    // Glean debugging options can be found here:
-    // https://mozilla.github.io/glean/book/reference/debug/index.html
-    if (
-      PUBLIC_APP_ENV &&
-      ["local", "heroku", "storybook"].includes(PUBLIC_APP_ENV)
-    ) {
-      // Enable logging pings to the browser console.
-      Glean.setLogPings(true);
-      // Tag pings for the Debug Viewer
-      // @see https://debug-ping-preview.firebaseapp.com/pings/fx-monitor-local-dev
-      Glean.setDebugViewTag(`fx-monitor-${PUBLIC_APP_ENV}-dev`);
-    }
-
-    Glean.initialize("monitor.frontend", uploadEnabled, {
-      // This will submit an events ping every time an event is recorded.
-      maxEvents: 1,
-      channel: PUBLIC_APP_ENV,
-      enableAutoPageLoadEvents: true,
-      experimentationId: experimentationId,
-    });
-    // This effect should only run once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const record = async <
-    EventModule extends keyof GleanMetricMap,
-    EventName extends keyof GleanMetricMap[EventModule],
-  >(
-    eventModule: EventModule,
-    event: keyof GleanMetricMap[EventModule],
-    data: GleanMetricMap[EventModule][EventName],
-  ) => {
-    const mod = (await import(
-      `../../telemetry/generated/${eventModule}`
-    )) as Record<keyof GleanMetricMap[EventModule], EventMetricType>;
-    // Instead of the specific type definitions we generated in the npm script
-    // `build-glean-types`, Glean takes a non-specific "ExtraArgs" type as
-    // parameter to `record`.
-
-    // Record the `plan_tier` key on all events.
-    // `plan_tier` is set on every metric, but it's too much work for TypeScript
-    // to infer that — hence the type assertion.
-    (data as GleanMetricMap["button"]["click"]).plan_tier = isPremiumUser
-      ? "Plus"
-      : "Free";
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mod[event].record(data as any);
-  };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mod[event].record(data as any);
+    },
+    [isPremiumUser, experiments],
+  );
+  /* c8 ignore end */
 
   return record;
 };

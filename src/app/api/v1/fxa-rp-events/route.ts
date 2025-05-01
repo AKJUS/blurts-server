@@ -13,7 +13,8 @@ import {
   updateFxAProfileData,
   updatePrimaryEmail,
   getOnerepProfileId,
-} from "../../../../db/tables/subscribers.js";
+  setMonthlyMonitorReport,
+} from "../../../../db/tables/subscribers";
 import {
   activateProfile,
   deactivateProfile,
@@ -21,10 +22,11 @@ import {
 } from "../../../functions/server/onerep";
 import { bearerToken } from "../../utils/auth";
 import { revokeOAuthTokens } from "../../../../utils/fxa";
-import appConstants from "../../../../appConstants";
 import { changeSubscription } from "../../../functions/server/changeSubscription";
 import { deleteAccount } from "../../../functions/server/deleteAccount";
 import { record } from "../../../functions/server/glean";
+import { sendPingToGA } from "../../../functions/server/googleAnalytics";
+import { getEnabledFeatureFlags } from "../../../../db/tables/featureFlags";
 
 const FXA_PROFILE_CHANGE_EVENT =
   "https://schemas.accounts.firefox.com/event/profile-change";
@@ -42,7 +44,7 @@ const MONITOR_PREMIUM_CAPABILITY = "monitor";
  * @returns {Promise<Array<jwt.JwtPayload> | undefined>} keys an array of FxA JWT keys
  */
 const getJwtPubKey = async () => {
-  const jwtKeyUri = `${appConstants.OAUTH_ACCOUNT_URI}/jwks`;
+  const jwtKeyUri = `${process.env.OAUTH_ACCOUNT_URI}/jwks`;
   try {
     const response = await fetch(jwtKeyUri, {
       headers: {
@@ -50,13 +52,14 @@ const getJwtPubKey = async () => {
       },
     });
     const { keys } = (await response.json()) as { keys: jwkToPem.JWK[] };
-    logger.info(
-      "getJwtPubKey",
-      `fetched jwt public keys from: ${jwtKeyUri} - ${keys.length}`,
-    );
+    logger.info("get_jwt_pub_key", {
+      message: `fetched jwt public keys from: ${jwtKeyUri} - ${keys.length}`,
+    });
     return keys;
   } catch (e: unknown) {
-    logger.error("getJwtPubKey", `Could not get JWT public key: ${jwtKeyUri}`);
+    logger.error("get_jwt_pub_key", {
+      exception: `Could not get JWT public key: ${jwtKeyUri}`,
+    });
     captureMessage(
       `Could not get JWT public key: ${jwtKeyUri} - ${e as string}`,
     );
@@ -122,23 +125,23 @@ export async function POST(request: NextRequest) {
   try {
     decodedJWT = (await authenticateFxaJWT(request)) as JwtPayload;
   } catch (e) {
-    logger.error("fxaRpEvents", e);
+    logger.error("fxa_rp_event", { exception: e as string });
     captureException(e);
     return NextResponse.json({ success: false }, { status: 401 });
   }
 
   if (!decodedJWT?.events) {
     // capture an exception in Sentry only. Throwing error will trigger FXA retry
-    logger.error("fxaRpEvents", decodedJWT);
+    logger.error("fxa_rp_event", { decodedJWT });
     captureMessage(
-      `fxaRpEvents: decodedJWT is missing attribute "events", ${
+      `fxa_rp_event: decodedJWT is missing attribute "events", ${
         decodedJWT as unknown as string
       }`,
     );
     return NextResponse.json(
       {
         success: false,
-        message: 'fxaRpEvents: decodedJWT is missing attribute "events"',
+        message: 'fxa_rp_event: decodedJWT is missing attribute "events"',
       },
       { status: 400 },
     );
@@ -148,14 +151,14 @@ export async function POST(request: NextRequest) {
   if (!fxaUserId) {
     // capture an exception in Sentry only. Throwing error will trigger FXA retry
     captureMessage(
-      `fxaRpEvents: decodedJWT is missing attribute "sub", ${
+      `fxa_rp_event: decodedJWT is missing attribute "sub", ${
         decodedJWT as unknown as string
       }`,
     );
     return NextResponse.json(
       {
         success: false,
-        message: 'fxaRpEvents: decodedJWT is missing attribute "sub"',
+        message: 'fxa_rp_event: decodedJWT is missing attribute "sub"',
       },
       { status: 400 },
     );
@@ -172,7 +175,7 @@ export async function POST(request: NextRequest) {
     const e = new Error(
       `could not find subscriber with fxa user id: ${fxaUserId}`,
     );
-    logger.error("fxaRpEvents", e);
+    logger.error("fxa_rp_event", { exception: e.message });
     return NextResponse.json({ success: true, message: "OK" }, { status: 200 });
   }
 
@@ -283,6 +286,10 @@ export async function POST(request: NextRequest) {
             oneRepProfileId,
           });
 
+          const enabledFeatureFlags = await getEnabledFeatureFlags({
+            isSignedOut: true,
+          });
+
           if (
             updatedSubscriptionFromEvent.isActive &&
             updatedSubscriptionFromEvent.capabilities.includes(
@@ -293,6 +300,9 @@ export async function POST(request: NextRequest) {
             // This is done before trying to activate the OneRep subscription, in case there are
             // any problems with activation.
             await changeSubscription(subscriber, true);
+
+            // Set monthly monitor report value back to true
+            await setMonthlyMonitorReport(subscriber, true);
 
             // MNTOR-2103: if one rep profile id doesn't exist in the db, fail immediately
             if (!oneRepProfileId) {
@@ -353,6 +363,10 @@ export async function POST(request: NextRequest) {
                 monitorUserId: subscriber.id.toString(),
               },
             });
+
+            if (enabledFeatureFlags.includes("GA4SubscriptionEvents")) {
+              await sendPingToGA(subscriber.id, "subscribe");
+            }
           } else if (
             !updatedSubscriptionFromEvent.isActive &&
             updatedSubscriptionFromEvent.capabilities.includes(
@@ -406,6 +420,10 @@ export async function POST(request: NextRequest) {
                 monitorUserId: subscriber.id.toString(),
               },
             });
+
+            if (enabledFeatureFlags.includes("GA4SubscriptionEvents")) {
+              await sendPingToGA(subscriber.id, "unsubscribe");
+            }
           }
         } catch (e) {
           captureMessage(
@@ -415,7 +433,8 @@ export async function POST(request: NextRequest) {
           );
           logger.error("failed_activating_subscription", {
             subscriber_id: subscriber.id,
-            exception: e,
+            message: (e as Error).message,
+            stack: (e as Error).stack,
           });
           return NextResponse.json(
             { success: false, message: "failed_activating_subscription" },

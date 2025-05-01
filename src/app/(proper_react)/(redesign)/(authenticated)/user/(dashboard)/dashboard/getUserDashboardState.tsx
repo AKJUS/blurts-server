@@ -225,16 +225,6 @@ export const getUserDashboardState = (
       isEligibleForPremium: true,
       isPremiumUser: false,
       scanInProgress: false,
-    }) ||
-    isMatchingContent(contentProps, {
-      isRelevantGuidedStep: relevantGuidedStep.id === "Scan",
-      hasExposures: true,
-      hasUnresolvedBreaches: true,
-      hasUnresolvedBrokers: true,
-      isEligibleForFreeScan: false,
-      isEligibleForPremium: false,
-      isPremiumUser: true,
-      scanInProgress: false,
     })
   ) {
     return "UsUserNonPremiumWithScanUnresolvedExposures";
@@ -334,11 +324,31 @@ export const getUserDashboardState = (
     /**
      * - US user
      * - Premium
+     * - Unresolved breaches
+     * - Scan: Unresolved
+     */
+    isMatchingContent(contentProps, {
+      isRelevantGuidedStep:
+        relevantGuidedStep.id === "Scan" ||
+        relevantGuidedStep.id === "DataBrokerManualRemoval",
+      hasExposures: true,
+      hasUnresolvedBreaches: true,
+      hasUnresolvedBrokers: true,
+      isEligibleForFreeScan: false,
+      isEligibleForPremium: false,
+      isPremiumUser: true,
+      scanInProgress: false,
+    }) ||
+    /**
+     * - US user
+     * - Premium
      * - No breaches
      * - Scan: Unresolved
      */
     isMatchingContent(contentProps, {
-      isRelevantGuidedStep: relevantGuidedStep.id === "Scan",
+      isRelevantGuidedStep:
+        relevantGuidedStep.id === "Scan" ||
+        relevantGuidedStep.id === "DataBrokerManualRemoval",
       hasExposures: true,
       hasUnresolvedBreaches: false,
       hasUnresolvedBrokers: true,
@@ -346,11 +356,27 @@ export const getUserDashboardState = (
       isEligibleForPremium: false,
       isPremiumUser: true,
       scanInProgress: false,
+    }) ||
+    /**
+     * - US user
+     * - Non-premium
+     * - With exposures
+     * - No breaches
+     * - Scan: Resolved
+     */
+    isMatchingContent(contentProps, {
+      isRelevantGuidedStep: relevantGuidedStep.id === "DataBrokerManualRemoval", // The guided step needs to be relevant
+      hasExposures: true,
+      hasUnresolvedBreaches: false,
+      hasUnresolvedBrokers: true,
+      isEligibleForFreeScan: false,
+      isEligibleForPremium: true,
+      isPremiumUser: false,
+      scanInProgress: false,
     })
   ) {
     return "UsUserPremiumOrNonPremiumWithScanUnresolvedExposures";
   }
-
   if (
     /**
      * - US user
@@ -451,7 +477,8 @@ export const getUserDashboardState = (
     }) ||
     /**
      * - US user
-     * - Premium
+     * - Non premium
+     * - No brokers
      * - Unresolved breaches
      * - Scan: In progress
      */

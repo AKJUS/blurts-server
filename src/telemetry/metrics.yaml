@@ -56,6 +56,9 @@ page:
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
         type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
 
 dashboard:
   view:
@@ -102,6 +105,9 @@ dashboard:
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
         type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
 
 popup:
   view:
@@ -135,6 +141,9 @@ popup:
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
         type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
 
   exit:
     type: event
@@ -166,6 +175,45 @@ popup:
         description: The ID of the popup that was shown, or some way to identify where on the page the interaction is located.
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
+        type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
+
+banner:
+  view:
+    type: event
+    description: |
+      A view of a banner on a webpage or dashboard view.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823766
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823766
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - rhelmer@mozilla.com
+    expires: never
+    extra_keys:
+      path:
+        description: The path of the page.
+        type: string
+      user_id:
+        description: Mozilla accounts user ID.
+        type: string
+      session_id:
+        description: An ID that allows us to track “sessions” of the user experience within the product.
+        type: string
+      flow_id:
+        description: A randomly generated unique identifier for following user flows within the FxA system.
+        type: string
+      banner_id:
+        description: The ID of the banner that was shown, or some way to identify where on the page the interaction is located.
+      plan_tier:
+        description: Which tier of plan the user is on [Free, Plus]
+        type: string
+      nimbus_user_id:
+        description: Nimbus user ID
         type: string
 
 button:
@@ -200,6 +248,9 @@ button:
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
         type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
 
 field:
   focus:
@@ -232,6 +283,9 @@ field:
         description: The ID of the field that was clicked on, or some way to identify where on the page the interaction is located.
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
+        type: string
+      nimbus_user_id:
+        description: Nimbus user ID
         type: string
 
 link:
@@ -266,6 +320,9 @@ link:
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
         type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
 
 upgrade_intent:
   click:
@@ -299,6 +356,9 @@ upgrade_intent:
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
         type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
 
   success:
     type: event
@@ -328,6 +388,9 @@ upgrade_intent:
         type: string
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
+        type: string
+      nimbus_user_id:
+        description: Nimbus user ID
         type: string
 
 expand:
@@ -362,6 +425,9 @@ expand:
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
         type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
 
 collapse:
   click:
@@ -394,6 +460,9 @@ collapse:
         description: The ID of the button that was clicked on, or some way to identify where on the page the interaction is located.
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
+        type: string
+      nimbus_user_id:
+        description: Nimbus user ID
         type: string
 
 cta_button:
@@ -428,8 +497,116 @@ cta_button:
       plan_tier:
         description: Which tier of plan the user is on [Free, Plus]
         type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
+
+  view:
+    type: event
+    description: |
+      A button that has a specific call-to-action entered the viewport.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823766
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823766
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - rhelmer@mozilla.com
+    expires: never
+    extra_keys:
+      path:
+        description: The path of the page.
+        type: string
+      user_id:
+        description: Mozilla accounts user ID.
+        type: string
+      session_id:
+        description: An ID that allows us to track “sessions” of the user experience within the product.
+        type: string
+      flow_id:
+        description: A randomly generated unique identifier for following user flows within the FxA system.
+        type: string
+      button_id:
+        description: The ID of the button that entered the viewport, or some way to identify where on the page the interaction is located.
+      plan_tier:
+        description: Which tier of plan the user is on [Free, Plus]
+        type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
 
 csat_survey:
+  view:
+    type: event
+    description: |
+      A CSAT survey entered the viewport.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823766
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823766
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - rhelmer@mozilla.com
+    expires: never
+    extra_keys:
+      path:
+        description: The path of the page.
+        type: string
+      survey_id:
+        description: The ID of the survey, or some way to identify which survey entered the viewport.
+      plan_tier:
+        description: Which tier of plan the user is on [Free, Plus]
+        type: string
+      experiment_branch:
+        description: The experiment branch the user is on. [control, treatment]
+        type: string
+      last_scan_date:
+        description: The date on which the user had their last data broker scan. [YYYYMMDD]
+        type: string
+      automated_removal_period:
+        description: The time period since the first automated removal for the user. [initial, 3-months, 6-months, 12-months]
+        type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
+
+  dismiss:
+    type: event
+    description: |
+      A CSAT survey has been dismissed by a user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823766
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823766
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - rhelmer@mozilla.com
+    expires: never
+    extra_keys:
+      path:
+        description: The path of the page.
+        type: string
+      survey_id:
+        description: The ID of the survey, or some way to identify which survey that has been dismissed by a user.
+      plan_tier:
+        description: Which tier of plan the user is on [Free, Plus]
+        type: string
+      experiment_branch:
+        description: The experiment branch the user is on. [control, treatment]
+        type: string
+      last_scan_date:
+        description: The date on which the user had their last data broker scan. [YYYYMMDD]
+        type: string
+      automated_removal_period:
+        description: The time period since the first automated removal for the user. [initial, 3-months, 6-months, 12-months]
+        type: string
+      nimbus_user_id:
+        description: Nimbus user ID
+        type: string
+
   click:
     type: event
     description: |
@@ -463,4 +640,7 @@ csat_survey:
         type: string
       automated_removal_period:
         description: The time period since the first automated removal for the user. [initial, 3-months, 6-months, 12-months]
+        type: string
+      nimbus_user_id:
+        description: Nimbus user ID
         type: string

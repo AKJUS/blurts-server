@@ -31,7 +31,6 @@
 
 ##
 
-error-could-not-add-email = Klarte ikkje å leggje til e-postadressa i databasen.
 error-not-subscribed = Denne e-postadressa abonnerer ikkje på { -product-name }.
 error-hibp-throttled = For mange tilkoplingar til { -brand-HIBP }.
 error-hibp-connect = Klarte ikkje å kople til { -brand-HIBP }.
@@ -42,8 +41,6 @@ user-add-verification-email-just-sent = Ein ny stadfestings e-post kan ikkje sen
 user-add-unknown-error = Noko gjekk gale når ytterlegare ei e-postadresse skulle leggjast til. Prøv igjen seinare.
 user-delete-unknown-error = Noko gjekk gale når ei e-postadresse skulle fjernast. Prøv igjen seinare.
 user-verify-token-error = Stadfestings-token er påkravd.
-user-unsubscribe-token-error = Avmelding krev eit token.
-user-unsubscribe-token-email-error = Avmelding krev eit token og eit emailHash.
 # compromised-data = the kind of user data exposed to hackers in data breach.
 compromised-data = Kompromiterte data:
 # Breach data provided by Have I Been Pwned.
@@ -54,8 +51,6 @@ show-all = Vis alle
 sign-out = Logg ut
 # Manage Firefox Account, link to page where account holders can change their account settings.
 manage-fxa = Handter { -brand-fxa }
-# Link title
-frequently-asked-questions = Vanlege spørsmål
 # Link title
 preferences = Innstillingar
 # Link title
@@ -102,7 +97,6 @@ breach-summary = Datalekkasjeoppsummering
 
 ##
 
-breach-alert-subject = { -product-name } fann e-postadressa di i ein ny datalekkasje.
 # This string is displayed under a large numeral that indicates the total number
 # of data breaches that exposed a user’s password. Don’t add $passwords to
 # your localization, because it would result in the number showing twice.
@@ -204,7 +198,7 @@ mozilla = { -brand-mozilla }
 terms-of-service = Tenestevilkår
 privacy-notice = Personvernerklæring
 github = { -brand-github }
-footer-nav-all-breaches = Alle datalekkasjar
+footer-nav-recent-breaches = Nylege datalekkasjar
 footer-external-link-faq-label = Vanlege spørsmål (FAQ)
 footer-external-link-faq-tooltip = Vanlege spørsmål
 
@@ -221,7 +215,7 @@ error-page-error-other-title = { $errorCode } Noko gjekk gale
 
 ## Breach overview page
 
-all-breaches-headline-2 = Alle datalekkasjar oppdaga av { -brand-fx-monitor }
+all-breaches-headline-3 = Database for datalekkasjar
 all-breaches-lead = Vi overvakar heile tida kjende datalekkasjar for å finne ut om din personelege informasjon er komprommitert. Her er ei fullstendig liste over alle datalekkasjar som er rapporterte sidan 2007.
 search-breaches = Søk etter datalekkasjar
 # the kind of user data exposed to hackers in data breach.

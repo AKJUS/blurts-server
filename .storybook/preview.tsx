@@ -28,7 +28,7 @@ const AppDecorator: Preview["decorators"] = (storyFn) => {
 };
 
 // Arguments to the `storySort` callback, left as documentation.
-type SortData = {
+type _SortData = {
   type: "story";
   id: string;
   name: string;
@@ -39,7 +39,6 @@ type SortData = {
 
 const preview: Preview = {
   parameters: {
-    actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -73,6 +72,10 @@ const preview: Preview = {
 
           if (path.startsWith("/breach-details/")) {
             linkTo("Pages/Public/Breach listing")();
+          }
+
+          if (path === "/terms/expiration-offer") {
+            linkTo("Pages/Public/Terms/Plus expiration offer")();
           }
 
           if (path === "/user/dashboard") {

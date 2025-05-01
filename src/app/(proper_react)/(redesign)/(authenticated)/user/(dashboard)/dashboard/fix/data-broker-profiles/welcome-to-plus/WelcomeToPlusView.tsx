@@ -18,13 +18,13 @@ import { ExtendedReactLocalization } from "../../../../../../../../../functions/
 import noBreachesIllustration from "../../images/high-risk-breaches-none.svg";
 import { CONST_ONEREP_DATA_BROKER_COUNT } from "../../../../../../../../../../constants";
 import { TelemetryButton } from "../../../../../../../../../components/client/TelemetryButton";
-import { TelemetryLink } from "../../../../../../../../../components/client/TelemetryLink";
+import { FeatureFlagName } from "../../../../../../../../../../db/tables/featureFlags";
 
 export type Props = {
   data: StepDeterminationData;
   subscriberEmails: string[];
   l10n: ExtendedReactLocalization;
-  howItWorksFlagEnabled: boolean;
+  enabledFeatureFlags: FeatureFlagName[];
 };
 
 export function WelcomeToPlusView(props: Props) {
@@ -39,6 +39,7 @@ export function WelcomeToPlusView(props: Props) {
   const summary = getDashboardSummary(
     scanResultsInProgress,
     props.data.subscriberBreaches,
+    props.enabledFeatureFlags,
   );
   const dataPointReduction = getDataPointReduction(summary);
 
@@ -46,8 +47,13 @@ export function WelcomeToPlusView(props: Props) {
     <FixView
       data={props.data}
       subscriberEmails={props.subscriberEmails}
-      nextStep={getNextGuidedStep(props.data, "Scan")}
+      nextStep={getNextGuidedStep(
+        props.data,
+        props.enabledFeatureFlags,
+        "Scan",
+      )}
       currentSection="data-broker-profiles"
+      enabledFeatureFlags={props.enabledFeatureFlags}
     >
       <div className={styles.contentWrapper}>
         <div className={styles.content}>
@@ -66,11 +72,14 @@ export function WelcomeToPlusView(props: Props) {
           </h3>
           <p>
             {hasRelevantScanResults
-              ? l10n.getString(
+              ? l10n.getFragment(
                   "welcome-to-premium-data-broker-profiles-description-part-one",
                   {
-                    profile_total_num: scanResultsInProgressCount,
-                    exposure_reduction_percentage: dataPointReduction,
+                    vars: {
+                      profile_total_num: scanResultsInProgressCount,
+                      exposure_reduction_percentage: dataPointReduction,
+                    },
+                    elems: { b: <b /> },
                   },
                 )
               : l10n.getString(
@@ -80,29 +89,13 @@ export function WelcomeToPlusView(props: Props) {
                   },
                 )}
           </p>
-          <p>
-            {hasRelevantScanResults && props.howItWorksFlagEnabled
-              ? l10n.getFragment(
-                  "welcome-to-premium-data-broker-profiles-description-part-two",
-                  {
-                    elems: {
-                      how_it_works_link: (
-                        <TelemetryLink
-                          href="/how-it-works"
-                          className={styles.howItWorksLink}
-                          target="_blank"
-                          eventData={{
-                            link_id: "explanation_of_removal_time",
-                          }}
-                        />
-                      ),
-                    },
-                  },
-                )
-              : l10n.getString(
-                  "welcome-to-premium-data-broker-profiles-zero-state-description-part-two",
-                )}
-          </p>
+          {!hasRelevantScanResults && (
+            <p>
+              {l10n.getString(
+                "welcome-to-premium-data-broker-profiles-zero-state-description-part-two",
+              )}
+            </p>
+          )}
           <p>
             {hasRelevantScanResults
               ? l10n.getString(
@@ -115,7 +108,10 @@ export function WelcomeToPlusView(props: Props) {
           <div className={styles.buttonsWrapper}>
             <TelemetryButton
               variant="primary"
-              href={getNextGuidedStep(props.data, "Scan").href}
+              href={
+                getNextGuidedStep(props.data, props.enabledFeatureFlags, "Scan")
+                  .href
+              }
               wide
               event={{
                 module: "ctaButton",

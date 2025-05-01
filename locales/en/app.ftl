@@ -29,7 +29,6 @@
 
 ##
 
-error-could-not-add-email = Could not add email address to database.
 error-not-subscribed = This email address is not subscribed to { -product-name }.
 error-hibp-throttled = Too many connections to { -brand-HIBP }.
 error-hibp-connect = Error connecting to { -brand-HIBP }.
@@ -42,9 +41,6 @@ user-add-unknown-error = Something went wrong adding another email address. Plea
 user-delete-unknown-error = Something went wrong removing an email address. Please try again later.
 
 user-verify-token-error = Verification token is required.
-
-user-unsubscribe-token-error = Unsubscribing requires a token.
-user-unsubscribe-token-email-error = Unsubscribing requires a token and emailHash.
 
 # compromised-data = the kind of user data exposed to hackers in data breach.
 compromised-data = Compromised data:
@@ -60,9 +56,6 @@ sign-out = Sign Out
 
 # Manage Firefox Account, link to page where account holders can change their account settings.
 manage-fxa = Manage { -brand-fxa }
-
-# Link title
-frequently-asked-questions = Frequently Asked Questions
 
 # Link title
 preferences = Preferences
@@ -118,8 +111,6 @@ send-verification = Send Verification Link
 breach-summary = Breach Summary
 
 ##
-
-breach-alert-subject = { -product-name } found your email in a new data breach
 
 # This string is displayed under a large numeral that indicates the total number
 # of data breaches that exposed a user’s password. Don’t add $passwords to
@@ -232,7 +223,7 @@ mozilla = { -brand-mozilla }
 terms-of-service = Terms of Service
 privacy-notice = Privacy Notice
 github = { -brand-github }
-footer-nav-all-breaches = All Breaches
+footer-nav-recent-breaches = Recent Data Breaches
 footer-external-link-faq-label = FAQs
 footer-external-link-faq-tooltip = Frequently asked questions
 
@@ -249,7 +240,7 @@ error-page-error-other-title = { $errorCode } Something went wrong
 
 ## Breach overview page
 
-all-breaches-headline-2 = All breaches detected by { -brand-fx-monitor }
+all-breaches-headline-3 = Data Breach Database
 all-breaches-lead = We monitor all known data breaches to find out if your personal information was compromised. Here’s a complete list of all of the breaches that have been reported since 2007.
 search-breaches = Search Breaches
 
@@ -270,4 +261,3 @@ banner-monitor-rebrand-dismiss-button-label = OK
 banner-monitor-rebrand-dismiss-button-tooltip = Dismiss
 
 loading-accessibility = Loading
-

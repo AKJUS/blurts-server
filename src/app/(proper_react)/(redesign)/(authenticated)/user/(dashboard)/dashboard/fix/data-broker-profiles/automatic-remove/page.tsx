@@ -8,7 +8,7 @@ import { getServerSession } from "../../../../../../../../../functions/server/ge
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getOnerepProfileId } from "../../../../../../../../../../db/tables/subscribers";
-import { getLatestOnerepScanResults } from "../../../../../../../../../../db/tables/onerep_scans";
+import { getScanResultsWithBroker } from "../../../../../../../../../../db/tables/onerep_scans";
 import { getSubscriberBreaches } from "../../../../../../../../../functions/server/getSubscriberBreaches";
 import { getSubscriberEmails } from "../../../../../../../../../functions/server/getSubscriberEmails";
 import { getCountryCode } from "../../../../../../../../../functions/server/getCountryCode";
@@ -21,9 +21,8 @@ import {
   getPremiumSubscriptionUrl,
 } from "../../../../../../../../../functions/server/getPremiumSubscriptionInfo";
 import { getAttributionsFromCookiesOrDb } from "../../../../../../../../../functions/server/attributions";
-
-const monthlySubscriptionUrl = getPremiumSubscriptionUrl({ type: "monthly" });
-const yearlySubscriptionUrl = getPremiumSubscriptionUrl({ type: "yearly" });
+import { hasPremium } from "../../../../../../../../../functions/universal/user";
+import { getEnabledFeatureFlags } from "../../../../../../../../../../db/tables/featureFlags";
 
 export default async function AutomaticRemovePage() {
   const session = await getServerSession();
@@ -32,13 +31,34 @@ export default async function AutomaticRemovePage() {
     redirect("/user/dashboard");
   }
 
+  const enabledFeatureFlags = await getEnabledFeatureFlags({
+    email: session.user.email,
+  });
+
   const additionalSubplatParams = await getAttributionsFromCookiesOrDb(
     session.user.subscriber.id,
   );
+  const additionalSubplatParamsString =
+    additionalSubplatParams.size > 0
+      ? // SubPlat2 subscription links already have the UTM parameter `?plan` appended.
+        `${enabledFeatureFlags.includes("SubPlat3") ? "?" : "&"}${additionalSubplatParams.toString()}`
+      : "";
 
-  const countryCode = getCountryCode(headers());
+  const monthlySubscriptionUrl = getPremiumSubscriptionUrl({
+    type: "monthly",
+    enabledFeatureFlags,
+  });
+  const yearlySubscriptionUrl = getPremiumSubscriptionUrl({
+    type: "yearly",
+    enabledFeatureFlags,
+  });
+
+  const countryCode = getCountryCode(await headers());
   const profileId = await getOnerepProfileId(session.user.subscriber.id);
-  const scanData = await getLatestOnerepScanResults(profileId);
+  const scanData = await getScanResultsWithBroker(
+    profileId,
+    hasPremium(session.user),
+  );
   const subBreaches = await getSubscriberBreaches({
     fxaUid: session.user.subscriber.fxa_uid,
     countryCode,
@@ -56,11 +76,12 @@ export default async function AutomaticRemovePage() {
     <AutomaticRemoveView
       data={data}
       subscriberEmails={subscriberEmails}
-      nextStep={getNextGuidedStep(data, "Scan")}
+      nextStep={getNextGuidedStep(data, enabledFeatureFlags, "Scan")}
       currentSection="data-broker-profiles"
-      monthlySubscriptionUrl={`${monthlySubscriptionUrl}&${additionalSubplatParams.toString()}`}
-      yearlySubscriptionUrl={`${yearlySubscriptionUrl}&${additionalSubplatParams.toString()}`}
+      monthlySubscriptionUrl={`${monthlySubscriptionUrl}${additionalSubplatParamsString}`}
+      yearlySubscriptionUrl={`${yearlySubscriptionUrl}${additionalSubplatParamsString}`}
       subscriptionBillingAmount={getSubscriptionBillingAmount()}
+      enabledFeatureFlags={enabledFeatureFlags}
     />
   );
 }

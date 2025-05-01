@@ -5,10 +5,14 @@
 "use client";
 
 import { useContext, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Session } from "next-auth";
-import { OnerepScanResultRow } from "knex/types/tables";
+import {
+  OnerepScanResultDataBrokerRow,
+  OnerepScanResultRow,
+} from "knex/types/tables";
 import styles from "./View.module.scss";
 import { Toolbar } from "../../../../../../components/client/toolbar/Toolbar";
 import { DashboardTopBanner } from "./DashboardTopBanner";
@@ -52,12 +56,15 @@ import {
 } from "../../../../../../../constants";
 import { ExperimentData } from "../../../../../../../telemetry/generated/nimbus/experiments";
 import { PetitionBanner } from "../../../../../../components/client/PetitionBanner";
+import { useLocalDismissal } from "../../../../../../hooks/useLocalDismissal";
+import { DataBrokerRemovalTime } from "../../../../../../functions/server/getDataBrokerRemovalTimeEstimates";
+import { UserAnnouncementWithDetails } from "../../../../../../../db/tables/user_announcements";
 
 export type TabType = "action-needed" | "fixed";
 
 export type Props = {
   enabledFeatureFlags: FeatureFlagName[];
-  experimentData: ExperimentData;
+  experimentData: ExperimentData["Features"];
   user: Session["user"];
   userBreaches: SubscriberBreach[];
   userScanData: LatestOnerepScanData;
@@ -72,12 +79,14 @@ export type Props = {
   fxaSettingsUrl: string;
   scanCount: number;
   isNewUser: boolean;
-  experimentationId: string;
   hasFirstMonitoringScan: boolean;
   elapsedTimeInDaysSinceInitialScan?: number;
   totalNumberOfPerformedScans?: number;
   activeTab: TabType;
   signInCount: number | null;
+  autoOpenUpsellDialog: boolean;
+  removalTimeEstimates: DataBrokerRemovalTime[];
+  userAnnouncements: UserAnnouncementWithDetails[];
 };
 
 export type TabData = {
@@ -87,16 +96,20 @@ export type TabData = {
 
 export const View = (props: Props) => {
   const l10n = useL10n();
-  const recordTelemetry = useTelemetry(props.experimentationId);
+  const recordTelemetry = useTelemetry();
   const countryCode = useContext(CountryCodeContext);
   const pathname = usePathname();
 
-  const howItWorksFlagEnabled =
-    props.enabledFeatureFlags.includes("HowItWorksPage");
-
   const [activeTab, setActiveTab] = useState<TabType>(props.activeTab);
+  const localDismissalPetitionBanner = useLocalDismissal(
+    `data_privacy_petition_banner-${props.user.subscriber?.id}`,
+  );
 
+  const [announcements, setAnnouncements] = useState<
+    UserAnnouncementWithDetails[] | null
+  >(props.userAnnouncements);
   useEffect(() => {
+    setAnnouncements(props.userAnnouncements);
     const nextPathname = `/user/dashboard/${activeTab}`;
     if (pathname !== nextPathname) {
       // Directly interacting with the history API is recommended by Next.js to
@@ -104,7 +117,7 @@ export const View = (props: Props) => {
       // See https://github.com/vercel/next.js/discussions/48110#discussioncomment-7563979.
       window.history.replaceState(null, "", nextPathname);
     }
-  }, [pathname, activeTab]);
+  }, [pathname, activeTab, props.userAnnouncements]);
 
   const adjustedScanResults = props.userScanData.results.map((scanResult) => {
     if (scanResult.status === "new" && hasPremium(props.user)) {
@@ -117,7 +130,7 @@ export const View = (props: Props) => {
       return {
         ...scanResult,
         status: "optout_in_progress",
-      } as OnerepScanResultRow;
+      } as OnerepScanResultDataBrokerRow;
     }
     return scanResult;
   });
@@ -172,8 +185,10 @@ export const View = (props: Props) => {
     arraySortedByDate.filter((exposure: Exposure) => {
       const exposureStatus = getExposureStatus(
         exposure,
-        props.enabledFeatureFlags.includes("AdditionalRemovalStatuses"),
+        isDataBrokerUnderMaintenance(exposure),
+        props.enabledFeatureFlags,
       );
+
       return (
         (tabKey === "action-needed" && exposureStatus === "actionNeeded") ||
         (tabKey === "fixed" && exposureStatus !== "actionNeeded")
@@ -187,10 +202,16 @@ export const View = (props: Props) => {
       ? "scan-" + exposure.onerep_scan_result_id
       : "breach-" + exposure.id;
 
+    const removalTimeEstimate = isScanResult(exposure)
+      ? props.removalTimeEstimates.find(({ d }) => d === exposure.data_broker)
+      : undefined;
+
     return (
       <li key={exposureCardKey} className={styles.exposureListItem}>
         <ExposureCard
+          experimentData={props.experimentData}
           enabledFeatureFlags={props.enabledFeatureFlags}
+          removalTimeEstimate={removalTimeEstimate?.t}
           exposureData={exposure}
           isExpanded={exposureCardKey === activeExposureCardKey}
           onToggleExpanded={() => {
@@ -218,15 +239,18 @@ export const View = (props: Props) => {
               variant="primary"
               wide
               href={
-                getNextGuidedStep({
-                  user: props.user,
-                  countryCode,
-                  latestScanData: adjustedScanData,
-                  subscriberBreaches: props.userBreaches,
-                }).href
+                getNextGuidedStep(
+                  {
+                    user: props.user,
+                    countryCode,
+                    latestScanData: adjustedScanData,
+                    subscriberBreaches: props.userBreaches,
+                  },
+                  props.enabledFeatureFlags,
+                ).href
               }
             >
-              {l10n.getString("exposure-card-cta")}
+              {l10n.getString("exposure-card-resolve-exposures-cta")}
             </Button>
           }
         />
@@ -237,6 +261,7 @@ export const View = (props: Props) => {
   const dataSummary = getDashboardSummary(
     adjustedScanResults,
     props.userBreaches,
+    props.enabledFeatureFlags,
   );
 
   const hasExposures = combinedArray.length > 0;
@@ -370,7 +395,7 @@ export const View = (props: Props) => {
               typeof props.totalNumberOfPerformedScans === "undefined" ||
               props.totalNumberOfPerformedScans <
                 CONST_ONEREP_MAX_SCANS_THRESHOLD ? (
-                <a
+                <Link
                   ref={waitlistTriggerRef}
                   href="/user/welcome/free-scan?referrer=dashboard"
                   onClick={() => {
@@ -425,6 +450,12 @@ export const View = (props: Props) => {
     );
   };
 
+  const shouldShowPetitionBanner =
+    props.experimentData["data-privacy-petition-banner"].enabled &&
+    props.isEligibleForPremium &&
+    ((activeTab === "fixed" && hasPremium(props.user)) ||
+      (activeTab === "action-needed" && !hasPremium(props.user)));
+
   return (
     <div className={styles.wrapper}>
       <Toolbar
@@ -435,6 +466,9 @@ export const View = (props: Props) => {
         fxaSettingsUrl={props.fxaSettingsUrl}
         lastScanDate={props.userScanData.scan?.created_at ?? null}
         experimentData={props.experimentData}
+        autoOpenUpsellDialog={props.autoOpenUpsellDialog}
+        enabledFeatureFlags={props.enabledFeatureFlags}
+        announcements={announcements}
       >
         <TabList
           tabs={tabsData}
@@ -450,12 +484,12 @@ export const View = (props: Props) => {
           selectedKey={activeTab}
         />
       </Toolbar>
-      {props.experimentData["data-privacy-petition-banner"].enabled &&
-        props.isEligibleForPremium &&
-        ((activeTab === "fixed" && hasPremium(props.user)) ||
-          (activeTab === "action-needed" && !hasPremium(props.user))) && (
-          <PetitionBanner user={props.user} />
-        )}
+      {shouldShowPetitionBanner && (
+        <PetitionBanner
+          user={props.user}
+          localDismissal={localDismissalPetitionBanner}
+        />
+      )}
       <CsatSurvey
         user={props.user}
         activeTab={activeTab}
@@ -470,6 +504,9 @@ export const View = (props: Props) => {
         hasFirstMonitoringScan={props.hasFirstMonitoringScan}
         lastScanDate={props.userScanData.scan?.created_at ?? null}
         signInCount={props.signInCount}
+        localDismissalPetitionBanner={localDismissalPetitionBanner}
+        shouldShowPetitionBanner={shouldShowPetitionBanner}
+        isEligibleForPremium={props.isEligibleForPremium}
       />
       <div className={styles.dashboardContent}>
         <DashboardTopBanner
@@ -487,6 +524,7 @@ export const View = (props: Props) => {
           bannerData={getDashboardSummary(
             adjustedScanResults,
             props.userBreaches,
+            props.enabledFeatureFlags,
           )}
           stepDeterminationData={{
             countryCode,
@@ -507,7 +545,7 @@ export const View = (props: Props) => {
           yearlySubscriptionUrl={props.yearlySubscriptionUrl}
           subscriptionBillingAmount={props.subscriptionBillingAmount}
           totalNumberOfPerformedScans={props.totalNumberOfPerformedScans}
-          howItWorksFlagEnabled={howItWorksFlagEnabled}
+          enabledFeatureFlags={props.enabledFeatureFlags}
         />
         <section className={styles.exposuresArea}>
           {activeTab === "action-needed" ? (
@@ -518,6 +556,7 @@ export const View = (props: Props) => {
         </section>
         <div className={styles.exposuresFilterWrapper}>
           <ExposuresFilter
+            experimentData={props.experimentData}
             enabledFeatureFlags={props.enabledFeatureFlags}
             initialFilterValues={initialFilterState}
             filterValues={filters}
@@ -537,3 +576,13 @@ export const View = (props: Props) => {
     </div>
   );
 };
+
+export function isDataBrokerUnderMaintenance(
+  exposure: Exposure | OnerepScanResultDataBrokerRow,
+): boolean {
+  return (
+    isScanResult(exposure) &&
+    exposure.broker_status === "removal_under_maintenance" &&
+    exposure.status !== "removed"
+  );
+}

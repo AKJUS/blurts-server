@@ -5,13 +5,11 @@
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "../../../../../functions/server/getServerSession";
 import {
+  FeatureFlagName,
+  featureFlagNames,
   getAllFeatureFlags,
-  getDeletedFeatureFlags,
+  isFeatureFlagAdminOnly,
 } from "../../../../../../db/tables/featureFlags";
-import { AddFeatureFlag } from "./components/AddFeatureFlag";
-import { DeleteFeatureFlag } from "./components/DeleteFeatureFlag";
-import { ToggleFlagEnabled } from "./components/ToggleFlagEnabled";
-import { FeatureFlagRow } from "knex/types/tables";
 import { isAdmin } from "../../../../../api/utils/auth";
 import { Toolbar } from "../../../../../components/client/toolbar/Toolbar";
 import styles from "./page.module.scss";
@@ -20,15 +18,26 @@ import {
   getPremiumSubscriptionUrl,
 } from "../../../../../functions/server/getPremiumSubscriptionInfo";
 import { defaultExperimentData } from "../../../../../../telemetry/generated/nimbus/experiments";
+import { ExistingFlagEditor, NewFlagEditor } from "./components/FlagEditor";
+
+export const metadata = {
+  title: "Monitor Feature Flags",
+};
 
 export default async function FeatureFlagPage() {
   const session = await getServerSession();
 
-  const monthlySubscriptionUrl = getPremiumSubscriptionUrl({ type: "monthly" });
-  const yearlySubscriptionUrl = getPremiumSubscriptionUrl({ type: "yearly" });
+  const monthlySubscriptionUrl = getPremiumSubscriptionUrl({
+    type: "monthly",
+    enabledFeatureFlags: [],
+  });
+  const yearlySubscriptionUrl = getPremiumSubscriptionUrl({
+    type: "yearly",
+    enabledFeatureFlags: [],
+  });
   const fxaSettingsUrl = process.env.FXA_SETTINGS_URL!;
 
-  if (!session?.user?.email) {
+  if (!session?.user?.email || !session.user.subscriber?.id) {
     return redirect("/");
   }
 
@@ -36,72 +45,24 @@ export default async function FeatureFlagPage() {
     return notFound();
   }
 
-  const ActiveFlagsTable = (featureFlags: { data: Array<FeatureFlagRow> }) => {
-    const { data } = featureFlags;
+  const featureFlags =
+    (await getAllFeatureFlags()).toSorted(
+      (flagA, flagB) => flagB.updated_at.getTime() - flagA.updated_at.getTime(),
+    ) ?? [];
 
-    if (!data || data.length === 0) {
-      return <p>No data</p>;
-    }
-
-    return (
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Enabled</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item) => (
-            <tr key={item.name}>
-              <td>{item.name}</td>
-              <td>
-                <ToggleFlagEnabled
-                  id="isEnabled"
-                  name={item.name}
-                  isEnabled={item.is_enabled}
-                />
-                {item.is_enabled}
-              </td>
-              <td>
-                <DeleteFeatureFlag name={item.name} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  };
-
-  const DeletedFlagsTable = (featureFlags: { data: Array<FeatureFlagRow> }) => {
-    const { data } = featureFlags;
-
-    if (!data || data.length === 0) {
-      return <p>No data</p>;
-    }
-
-    return (
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Deleted At</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item) => (
-            <tr key={item.name}>
-              <td>{item.name}</td>
-              <td>{item.deleted_at?.toString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  };
-
-  const featureFlags = (await getAllFeatureFlags()) ?? null;
-  const deletedFeatureFlags = (await getDeletedFeatureFlags()) ?? null;
+  /**
+   * Elements in this array are either existing flags that are disabled,
+   * or names of flags that are not known in the database yet.
+   */
+  const disabledFlags = featureFlagNames
+    .map((flagName) => {
+      return featureFlags.find((flag) => flag.name === flagName) ?? flagName;
+    })
+    .filter(
+      (flagOrFlagName) =>
+        typeof flagOrFlagName === "string" || !flagOrFlagName.is_enabled,
+    )
+    .reverse();
 
   return (
     <div className={styles.wrapper}>
@@ -118,24 +79,47 @@ export default async function FeatureFlagPage() {
             lastScanDate={null}
             // We're not going to run experiments on the feature flag page (it's
             // not user-visible), so no need to fetch experiment data:
-            experimentData={defaultExperimentData}
+            experimentData={defaultExperimentData["Features"]}
+            enabledFeatureFlags={[]}
+            announcements={null}
           />
         </div>
       </nav>
-      <div className={styles.start}>
-        <h1>
-          Note: Feaure flags are deprecated, use{" "}
-          <a href="https://experimenter.info/">Experimenter</a>.
-        </h1>
-        <br />
-        <h3>Add New Feature Flag</h3>
-        <AddFeatureFlag />
-        <br />
-        <h3>Active Feature Flags</h3>
-        <ActiveFlagsTable data={featureFlags} />
-        <br />
-        <h3>Deleted Feature Flags</h3>
-        <DeletedFlagsTable data={deletedFeatureFlags} />
+      <div className={styles.main}>
+        <h3>Disabled Feature Flags</h3>
+        <div className={styles.flagList}>
+          {disabledFlags.map((flagOrFlagName) => {
+            return typeof flagOrFlagName === "string" ? (
+              <NewFlagEditor
+                key={flagOrFlagName}
+                flagName={flagOrFlagName}
+                adminOnly={isFeatureFlagAdminOnly(flagOrFlagName)}
+              />
+            ) : (
+              <ExistingFlagEditor
+                key={flagOrFlagName.name}
+                flag={flagOrFlagName}
+                adminOnly={isFeatureFlagAdminOnly(flagOrFlagName.name)}
+              />
+            );
+          })}
+        </div>
+        <h3>Enabled Feature Flags</h3>
+        <div className={styles.flagList}>
+          {featureFlags
+            .filter(
+              (flag) =>
+                flag.is_enabled &&
+                featureFlagNames.includes(flag.name as FeatureFlagName),
+            )
+            .map((flag) => (
+              <ExistingFlagEditor
+                key={flag.name}
+                flag={flag}
+                adminOnly={isFeatureFlagAdminOnly(flag.name)}
+              />
+            ))}
+        </div>
       </div>
     </div>
   );

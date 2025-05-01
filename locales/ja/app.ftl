@@ -29,7 +29,6 @@
 
 ##
 
-error-could-not-add-email = メールアドレスをデータベースに追加できませんでした。
 error-not-subscribed = このメールアドレスは { -product-name } に登録されていません。
 error-hibp-throttled = { -brand-HIBP } への接続数が多すぎます。
 error-hibp-connect = { -brand-HIBP } への接続でエラーが発生しました。
@@ -40,8 +39,6 @@ user-add-verification-email-just-sent = メールをすぐに再送信するこ�
 user-add-unknown-error = 別のメールアドレスを追加する際に問題が発生しました。後でもう一度試してください。
 user-delete-unknown-error = メールアドレスを削除する際に問題が発生しました。後でもう一度試してください。
 user-verify-token-error = 検証トークンが必要です。
-user-unsubscribe-token-error = 登録解除にはトークンが必要です。
-user-unsubscribe-token-email-error = 登録解除にはトークンと emailHash が必要です。
 # compromised-data = the kind of user data exposed to hackers in data breach.
 compromised-data = 漏洩したデータ:
 # Breach data provided by Have I Been Pwned.
@@ -52,8 +49,6 @@ show-all = すべて表示
 sign-out = ログアウト
 # Manage Firefox Account, link to page where account holders can change their account settings.
 manage-fxa = { -brand-fxa }の管理
-# Link title
-frequently-asked-questions = よくある質問
 # Link title
 preferences = 設定
 # Link title
@@ -85,7 +80,6 @@ breach-summary = データ侵害概要
 
 ##
 
-breach-alert-subject = { -product-name } が、あなたのメールアドレスの新しいデータ侵害を発見しました。
 # This string is displayed under a large numeral that indicates the total number
 # of data breaches that exposed a user’s password. Don’t add $passwords to
 # your localization, because it would result in the number showing twice.
@@ -121,6 +115,8 @@ breach-added-label = 侵害が追加された日:
 # Section headline
 rec-section-headline = この侵害への対処方法
 rec-section-subhead = あなたの個人情報を安全に保ち、デジタル ID を保護するために、以下の手順を行うことをおすすめします。
+# Section headline
+rec-section-headline-no-pw = 個人情報を保護するためにするべきこと
 
 ##
 
@@ -136,6 +132,8 @@ rec-section-subhead = あなたの個人情報を安全に保ち、デジタル 
 
 ## Header
 
+# Deprecated
+brand-fx-monitor = { -brand-fx-monitor }
 sign-in = ログイン
 brand-mozilla-monitor = { -brand-fx-monitor }
 
@@ -163,6 +161,7 @@ user-menu-signout-tooltip = { -brand-mozilla-monitor } からログアウトす�
 ## Footer
 
 mozilla = { -brand-mozilla }
+github = { -brand-github }
 footer-external-link-faq-label = FAQ
 footer-external-link-faq-tooltip = よくある質問
 
@@ -176,12 +175,15 @@ error-page-error-404-cta-button = 戻る
 
 ## Breach overview page
 
+all-breaches-lead = 個人情報が漏えいしていないか確認するために、既知のデータ侵害を監視しています。2007 年以降に報告されたすべての侵害の完全なリストです。
 search-breaches = データ侵害を検索
 # the kind of user data exposed to hackers in data breach.
 exposed-data = 侵害されたデータ:
 
 ## Public breach detail page
 
+breach-detail-cta-signup = データ侵害を確認する
 
 ## Firefox Monitor -> Mozilla Monitor rebrand banner
 
+banner-monitor-rebrand-dismiss-button-label = OK

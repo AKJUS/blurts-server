@@ -31,7 +31,6 @@
 
 ##
 
-error-could-not-add-email = 데이터베이스에 이메일 주소를 추가 할 수 없습니다.
 error-not-subscribed = 이 이메일 주소는 { -product-name }에 가입되어 있지 않습니다.
 error-hibp-throttled = { -brand-HIBP }에 대한 연결이 너무 많습니다.
 error-hibp-connect = { -brand-HIBP }에 연결하는 동안 오류가 발생했습니다.
@@ -42,8 +41,6 @@ user-add-verification-email-just-sent = 이렇게 빨리 또 다른 확인 이�
 user-add-unknown-error = 다른 이메일 주소를 추가하는 중에 문제가 발생했습니다. 나중에 다시 시도 해주십시오.
 user-delete-unknown-error = 이메일 주소를 삭제하는 중 오류가 발생했습니다. 나중에 다시 시도해 주세요.
 user-verify-token-error = 확인 토큰이 필요합니다.
-user-unsubscribe-token-error = 구독을 취소하려면 토큰이 필요합니다.
-user-unsubscribe-token-email-error = 구독을 취소하려면 토큰과 emailHash가 필요합니다.
 # compromised-data = the kind of user data exposed to hackers in data breach.
 compromised-data = 유출 데이터 :
 # Breach data provided by Have I Been Pwned.
@@ -54,8 +51,6 @@ show-all = 모두 보기
 sign-out = 로그아웃
 # Manage Firefox Account, link to page where account holders can change their account settings.
 manage-fxa = { -brand-fxa } 관리
-# Link title
-frequently-asked-questions = 자주 묻는 질문
 # Link title
 preferences = 환경 설정
 # Link title
@@ -100,7 +95,6 @@ breach-summary = 유출 내역 요약
 
 ##
 
-breach-alert-subject = { -product-name }가 새로 유출된 자료에서 일치하는 이메일을 찾았습니다
 # This string is displayed under a large numeral that indicates the total number
 # of data breaches that exposed a user’s password. Don’t add $passwords to
 # your localization, because it would result in the number showing twice.
@@ -188,6 +182,7 @@ user-menu-trigger-label = 사용자 메뉴 열기
 user-menu-trigger-tooltip = 프로필
 user-menu-manage-fxa-label = { -brand-mozilla-account } 관리
 user-menu-settings-label = 설정
+user-menu-settings-tooltip = { -brand-mozilla-monitor } 설정
 user-menu-help-label = 도움말 및 지원
 user-menu-help-tooltip = { -brand-mozilla-monitor } 사용에 대한 도움 받기
 user-menu-signout-label = 로그아웃
@@ -199,6 +194,7 @@ mozilla = { -brand-mozilla }
 terms-of-service = 이용 약관
 privacy-notice = 개인정보 보호정책
 github = { -brand-github }
+footer-nav-recent-breaches = 최근 데이터 침해
 footer-external-link-faq-label = FAQ
 footer-external-link-faq-tooltip = 자주 묻는 질문
 
@@ -215,7 +211,8 @@ error-page-error-other-title = { $errorCode } 문제가 발생했습니다.
 
 ## Breach overview page
 
-all-breaches-headline-2 = { -brand-fx-monitor }가 감지한 모든 위반
+all-breaches-headline-3 = 데이터 유출 데이터베이스
+all-breaches-lead = 저희는 사용자의 개인 정보가 유출되었는지 확인하기 위해 알려진 데이터 침해를 모두 모니터링합니다. 2007년 이후 보고된 모든 침해의 전체 목록은 다음과 같습니다.
 search-breaches = 유출 내역 검색하기
 # the kind of user data exposed to hackers in data breach.
 exposed-data = 노출된 데이터:
@@ -223,10 +220,12 @@ exposed-data = 노출된 데이터:
 ## Public breach detail page
 
 find-out-if-2 = 이번 위반에 포함되었는지 알아보세요.
+find-out-if-description = 이 유출에서 이메일 주소가 노출되었는지 빠르게 확인하고 다음 작업을 수행할 수 있도록 도와드리겠습니다.
 breach-detail-cta-signup = 유출 여부 확인하기
 
 ## Firefox Monitor -> Mozilla Monitor rebrand banner
 
+banner-monitor-rebrand-text = <b>{ -brand-mozilla-monitor }</b>: <b>개인 정보를 보호</b>하기 위한 새로운 이름과 모양, 더 많은 방법이 있습니다.
 banner-monitor-rebrand-dismiss-button-label = 예
 banner-monitor-rebrand-dismiss-button-tooltip = 닫기
 loading-accessibility = 로딩 중

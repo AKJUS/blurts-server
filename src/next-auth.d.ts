@@ -3,10 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { DefaultSession } from "next-auth";
-import { SubscriberRow } from "knex/types/tables";
 import { ISO8601DateString } from "./utils/parse";
+import { SanitizedSubscriberRow } from "./app/functions/server/sanitize";
 
-export type SerializedSubscriber = Omit<SubscriberRow, "created_at"> & {
+export type SerializedSubscriber = Omit<
+  SanitizedSubscriberRow,
+  "created_at"
+> & {
   created_at: ISO8601DateString;
 };
 
@@ -42,6 +45,7 @@ declare module "next-auth" {
 
   /** Session data available after deserialising the JWT */
   interface Session {
+    error?: "RefreshAccessTokenError";
     user: {
       fxa?: {
         /** The value of the Accept-Language header when the user signed up for their Firefox Account */

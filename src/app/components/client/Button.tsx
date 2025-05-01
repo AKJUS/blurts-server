@@ -11,8 +11,10 @@ import { useButton } from "react-aria";
 import { useL10n } from "../../hooks/l10n";
 import { VisuallyHidden } from "../server/VisuallyHidden";
 
+type ButtonVariants = "primary" | "secondary" | "tertiary" | "link" | "icon";
+
 export interface Props {
-  variant: "primary" | "secondary" | "tertiary" | "link";
+  variant: ButtonVariants;
   children?: ReactNode;
   className?: string;
   destructive?: boolean;
@@ -21,7 +23,7 @@ export interface Props {
   isLoading?: boolean;
   small?: boolean;
   wide?: boolean;
-  buttonRef?: RefObject<HTMLButtonElement | HTMLAnchorElement>;
+  buttonRef?: RefObject<HTMLButtonElement | HTMLAnchorElement | null>;
 }
 
 export type ButtonProps = Props & Parameters<typeof useButton>[0]; // AriaButtonOptions
@@ -67,37 +69,30 @@ export const Button = (props: ButtonProps) => {
   // If `props.isLoading` is not undefined, the contents of the link is going to
   // change into a loading indicator, which needs to be read by a screen reader:
   const ariaLiveValue: AriaAttributes["aria-live"] =
-    /* c8 ignore next 3 */
-    // Since the Node 20.10 upgrade, it's been intermittently marking this (and
-    // this comment) as uncovered, even though I think it's covered by tests.
     typeof isLoading === "boolean" ? "polite" : undefined;
 
   return typeof href === "string" ? (
     <Link
       aria-live={ariaLiveValue}
       {...buttonProps}
-      ref={buttonRef as RefObject<HTMLAnchorElement>}
+      ref={buttonRef as RefObject<HTMLAnchorElement | null>}
       href={href}
       target={target}
       className={classes}
     >
-      {
-        /* c8 ignore next 3 */
-        // Since the Node 20.10 upgrade, it's been intermittently marking this (and
-        // this comment) as uncovered, even though I think it's covered by tests.
-        isLoading ? <Loader /> : children
-      }
+      {isLoading ? <Loader /> : children}
     </Link>
   ) : (
     <button
       aria-live={ariaLiveValue}
       {...buttonProps}
-      ref={buttonRef as RefObject<HTMLButtonElement>}
+      ref={buttonRef as RefObject<HTMLButtonElement | null>}
       className={classes}
+      disabled={disabled}
     >
       {
         /* c8 ignore next */
-        isLoading ? <Loader /> : children
+        isLoading ? <Loader variant={props.variant} /> : children
       }
     </button>
   );
@@ -105,16 +100,16 @@ export const Button = (props: ButtonProps) => {
 
 /* This animation was adapted from https://loading.io/css/ */
 /* c8 ignore start */
-export const Loader = () => {
+export const Loader = ({ variant }: { variant?: ButtonVariants }) => {
   const l10n = useL10n();
 
   return (
-    <div className={styles.ldsRing}>
+    <div className={`${styles.ldsRing} ${variant ? styles[variant] : ""}`}>
       <VisuallyHidden>{l10n.getString("loading-accessibility")}</VisuallyHidden>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
+      <div className={variant ? styles[variant] : ""}></div>
+      <div className={variant ? styles[variant] : ""}></div>
+      <div className={variant ? styles[variant] : ""}></div>
+      <div className={variant ? styles[variant] : ""}></div>
     </div>
   );
 };

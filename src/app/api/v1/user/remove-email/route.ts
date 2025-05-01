@@ -6,7 +6,6 @@ import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "../../../../functions/server/logging";
-import AppConstants from "../../../../../appConstants";
 import {
   getSubscriberByFxaUid,
   deleteResolutionsWithEmail,
@@ -14,15 +13,18 @@ import {
 import {
   removeOneSecondaryEmail,
   getEmailById,
-} from "../../../../../db/tables/emailAddresses.js";
-import { getL10n } from "../../../../functions/l10n/serverComponents";
+} from "../../../../../db/tables/emailAddresses";
+import {
+  getAcceptLangHeaderInServerComponents,
+  getL10n,
+} from "../../../../functions/l10n/serverComponents";
 
 interface EmailDeleteRequest {
   emailId: number;
 }
 
 export async function POST(req: NextRequest) {
-  const l10n = getL10n();
+  const l10n = getL10n(await getAcceptLangHeaderInServerComponents());
   const token = await getToken({ req });
 
   if (typeof token?.subscriber?.fxa_uid === "string") {
@@ -50,7 +52,7 @@ export async function POST(req: NextRequest) {
         existingEmail.email,
       );
       return NextResponse.redirect(
-        AppConstants.SERVER_URL + "/user/settings",
+        process.env.SERVER_URL + "/user/settings",
         301,
       );
     } catch (e) {
@@ -58,7 +60,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false }, { status: 500 });
     }
   } else {
-    // Not Signed in, redirect to home
-    return NextResponse.redirect(AppConstants.SERVER_URL, 301);
+    return NextResponse.json({ success: false }, { status: 401 });
   }
 }

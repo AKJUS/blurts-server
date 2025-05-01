@@ -20,7 +20,7 @@ exposure-chart-heading =
 #   $nr (number) - Number of fixed exposures found for the user
 exposure-chart-heading-fixed = <nr>{ $nr }</nr> <label>Popravljeno</label>
 exposure-chart-legend-heading-type = izpostavljenost
-exposure-chart-legend-heading-nr = Števila
+exposure-chart-legend-heading-nr = Število
 # Variables:
 #   $nr (number) - Number of a particular type of exposure found for the user
 exposure-chart-legend-value-nr = { $nr }×
@@ -29,7 +29,7 @@ exposure-chart-caption = Ta grafikon prikazuje, kolikokrat so vaši podatki akti
 #   $total_fixed_exposures_num (number) - Number of fixed exposures
 #   $total_exposures_num (number) - Number of total exposures
 exposure-chart-caption-fixed = Ta grafikon prikazuje skupne izpostavljenosti, ki so fiksne ({ $total_fixed_exposures_num } od { $total_exposures_num })
-exposure-chart-returning-user-upgrade-prompt = Domači naslov, družinski člani in drugo še niso vključeni.
+exposure-chart-returning-user-upgrade-prompt = Domači naslov, družinski člani in drugo še ni vključeno.
 exposure-chart-returning-user-upgrade-prompt-cta = Začnite brezplačen pregled
 exposure-chart-scan-in-progress-prompt = <b>Iskanje v teku:</b> naslov, družinski člani in drugo še niso vključeni.
 modal-active-number-of-exposures-title = O številu aktivnih izpostavljenosti
@@ -47,6 +47,7 @@ modal-active-number-of-exposures-part-three-all = Ko bodo razrešene, bodo dodan
 modal-fixed-number-of-exposures-title = O številu določenih izpostavljenosti
 modal-fixed-number-of-exposures-all = Ta grafikon vključuje skupno število odpravljenih kraj podatkov za vse e-poštne naslove, ki jih trenutno spremljate. Ko so izpostavljenosti označene kot fiksne, bodo tukaj dodane skupni vsoti.
 modal-cta-ok = V redu
+modal-cta-got-it = Razumem
 open-modal-alt = Odpri način
 close-modal-alt = Zapri modalno okno
 open-tooltip-alt = Odpri opis orodja
@@ -143,9 +144,9 @@ dashboard-top-banner-non-us-your-data-is-protected-description =
     }
 dashboard-top-banner-monitor-more-cta = Spremljaj več naslovov
 
-# About Exposure Statuses Modal
+# About Exposure Indicators Modal
 
-modal-exposure-status-title = O stanjih izpostavljenosti
 modal-exposure-status-description-all = Izpostavljenosti iščemo v vseh znanih krajah podatkov. Vaša izpostavljenost bo imela eno od naslednjih stanj:
-modal-exposure-status-action-needed = <b>Potrebno je dejanje</b> pomeni, da je trenutno aktiven in da ga morate popraviti.
-modal-exposure-status-fixed = <b>Odpravljena</b> pomeni, da je bila izpostavljenost rešena in ne morete storiti ničesar.
+modal-exposure-indicator-title = Stanja izpostavljenosti
+modal-exposure-indicator-action-needed = Za dokončanje potrebujete napredno ali ročno dejanje.
+modal-exposure-indicator-fixed = Izpostavljenost je bila razrešena in ni vam potrebno storiti ničesar.

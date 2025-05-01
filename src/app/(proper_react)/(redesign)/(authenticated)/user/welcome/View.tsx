@@ -18,7 +18,7 @@ import { GetStarted } from "./GetStarted";
 import { FindExposures } from "./FindExposures";
 import { EnterInfo } from "./EnterInfo";
 import { useL10n } from "../../../../../hooks/l10n";
-import monitorLogo from "../../../../images/monitor-logo.webp";
+import MonitorLogo from "../../../../images/monitor-logo.svg";
 import { useTelemetry } from "../../../../../hooks/useTelemetry";
 import { ExperimentData } from "../../../../../../telemetry/generated/nimbus/experiments";
 
@@ -30,7 +30,7 @@ export type Props = {
   breachesTotalCount: number;
   stepId?: StepId;
   previousRoute: string | null;
-  experimentData: ExperimentData;
+  experimentData: ExperimentData["Features"];
 };
 
 export const View = ({
@@ -46,8 +46,6 @@ export const View = ({
   const [currentStep, setCurrentStep] = useState<StepId>(stepId);
   const router = useRouter();
   const recordTelemetry = useTelemetry();
-  const optionalInfoIsEnabled =
-    experimentData["welcome-scan-optional-info"].enabled;
 
   useEffect(() => {
     let pageName = "welcome";
@@ -89,7 +87,7 @@ export const View = ({
             setCurrentStep("getStarted");
           }
         }}
-        optionalInfoIsEnabled={optionalInfoIsEnabled}
+        experimentData={experimentData}
       />
     ) : (
       <GetStarted
@@ -108,7 +106,7 @@ export const View = ({
       <header>
         <Link href="/" className={styles.homeLink}>
           <Image
-            src={monitorLogo}
+            src={MonitorLogo}
             alt={l10n.getString("main-nav-link-home-label")}
             width={170}
           />

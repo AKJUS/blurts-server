@@ -7,7 +7,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { InputField } from "../InputField";
 
 const meta: Meta<typeof InputField> = {
-  title: "InputField",
+  title: "Design Systems/Molecules/Input Field",
   component: InputField,
 };
 export default meta;
@@ -79,5 +79,24 @@ export const DateInputFieldInvalidWithMessage: Story = {
     type: "date",
     isInvalid: false,
     errorMessage: "Select a date",
+  },
+};
+
+export const TextInputFieldEmptyFloatingLabel: Story = {
+  args: {
+    label: "Text input floating label",
+    placeholder: "Type here",
+    type: "text",
+    hasFloatingLabel: true,
+  },
+};
+
+export const TextInputFieldFilledFloatingLabel: Story = {
+  args: {
+    label: "Text input floating label",
+    placeholder: "Type here",
+    type: "text",
+    value: "Input is filled",
+    hasFloatingLabel: true,
   },
 };

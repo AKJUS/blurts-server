@@ -2,10 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-chevron-alt = Details zur Offenlegung
-
-exposure-card-exposure-type = Offenlegungstyp
-exposure-card-date-found = Datum der Offenlegung
+chevron-alt = Details zum Datenleck
+exposure-card-exposure-type = Typ des Datenlecks
+exposure-card-date-found = Datum der Datenlecks
 
 # Status Pill
 
@@ -29,9 +28,10 @@ exposure-card-other = Sonstiges
 exposure-card-description-data-breach-action-needed = Ihre Daten wurden am { $data_breach_date } im Rahmen des <data_breach_link>Datenlecks von { $data_breach_company } offengelegt.</data_breach_link> Wir zeigen Ihnen die Schritte, um das zu beheben.
 exposure-card-description-data-breach-fixed = Sie haben die erforderlichen Schritte durchgeführt, um <data_breach_link>dieses Datenleck</data_breach_link> zu beheben. Wir suchen ständig nach Datenlecks und warnen Sie bei allen neuen Lecks.
 exposure-card-your-exposed-info = Ihre offengelegten Daten:
+exposure-card-found-the-following-data = { -brand-monitor } hat die folgenden offengelegten Daten gefunden:
 exposure-card-exposure-type-data-broker = Daten werden verkauft
 exposure-card-exposure-type-data-breach = Datenleck
-exposure-card-cta = Alle Offenlegungen beheben
+exposure-card-resolve-exposures-cta = Datenleck beheben
 exposure-card-label-company-logo = Firmenlogo
 exposure-card-label-company = Firma
 # Status of the exposure card, could be In Progress, Fixed or Action Needed
@@ -40,3 +40,4 @@ exposure-card-label-status = Status
 # $category_label is the data breach exposure type that was leaked. Eg. Email, IP Address.
 # $count is the number of times that the data type was leaked.
 exposure-card-label-and-count = { $category_label }: { $count }
+exposure-card-manual-resolution-praise = <b>Sehr gut gemacht!</b> Sie haben dieses Datenleck gelöst.

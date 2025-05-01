@@ -14,7 +14,6 @@ import {
 } from "../../../../../functions/server/onerep";
 import type { CreateProfileRequest } from "../../../../../functions/server/onerep";
 import { meetsAgeRequirement } from "../../../../../functions/universal/user";
-import AppConstants from "../../../../../../appConstants";
 import { getSubscriberByFxaUid } from "../../../../../../db/tables/subscribers";
 import {
   setOnerepProfileId,
@@ -27,7 +26,10 @@ import { getCountryCode } from "../../../../../functions/server/getCountryCode";
 import { getExperimentationId } from "../../../../../functions/server/getExperimentationId";
 import { getExperiments } from "../../../../../functions/server/getExperiments";
 import { getLocale } from "../../../../../functions/universal/getLocale";
-import { getL10n } from "../../../../../functions/l10n/serverComponents";
+import {
+  getAcceptLangHeaderInServerComponents,
+  getL10n,
+} from "../../../../../functions/l10n/serverComponents";
 
 export interface WelcomeScanBody {
   success: boolean;
@@ -47,7 +49,6 @@ export async function POST(
   req: NextRequest,
 ): Promise<NextResponse<WelcomeScanBody> | NextResponse<unknown>> {
   const session = await getServerSession();
-  const searchParams = req.nextUrl.searchParams;
 
   if (!session?.user?.subscriber) {
     throw new Error("No fxa_uid found in session");
@@ -55,10 +56,13 @@ export async function POST(
 
   const eligible = await isEligibleForFreeScan(
     session.user,
-    getCountryCode(headers()),
+    getCountryCode(await headers()),
   );
   if (!eligible) {
-    throw new Error("User is not eligible for feature");
+    logger.warn("scan_created_warn", {
+      message: "User is not eligible for feature",
+    });
+    return NextResponse.json({ success: false }, { status: 422 });
   }
 
   const params: UserInfo = await req.json();
@@ -88,25 +92,30 @@ export async function POST(
     throw new Error(`User does not meet the age requirement: ${dateOfBirth}`);
   }
 
-  const experimentationId = getExperimentationId(session.user);
+  const experimentationId = await getExperimentationId(session.user);
   const experimentData = await getExperiments({
-    experimentationId: experimentationId,
-    countryCode: getCountryCode(headers()),
-    locale: getLocale(getL10n()),
-    previewMode: searchParams.get("nimbus_web_preview") === "true",
+    experimentationId,
+    countryCode: getCountryCode(await headers()),
+    locale: getLocale(getL10n(await getAcceptLangHeaderInServerComponents())),
   });
-  const optionalInfoIsEnabled =
-    experimentData["welcome-scan-optional-info"].enabled;
+  const optionalInfoExperimentData =
+    experimentData["Features"]["welcome-scan-optional-info"];
 
   const profileData: CreateProfileRequest = {
     first_name: firstName,
     last_name: lastName,
     addresses: [{ city, state }],
     birth_date: dateOfBirth,
-    ...(optionalInfoIsEnabled && {
-      middle_name: middleName,
-      name_suffix: nameSuffix,
-    }),
+    ...(optionalInfoExperimentData.enabled &&
+      (optionalInfoExperimentData.variant === "middleName" ||
+        optionalInfoExperimentData.variant === "suffixAndMiddleName") && {
+        middle_name: middleName,
+      }),
+    ...(optionalInfoExperimentData.enabled &&
+      (optionalInfoExperimentData.variant === "suffix" ||
+        optionalInfoExperimentData.variant === "suffixAndMiddleName") && {
+        name_suffix: nameSuffix,
+      }),
   };
 
   if (typeof session?.user?.subscriber.fxa_uid === "string") {
@@ -144,7 +153,6 @@ export async function POST(
       return NextResponse.json({ success: false }, { status: 500 });
     }
   } else {
-    // Not Signed in, redirect to home
-    return NextResponse.redirect(AppConstants.SERVER_URL, 302);
+    return NextResponse.json({ success: false }, { status: 401 });
   }
 }

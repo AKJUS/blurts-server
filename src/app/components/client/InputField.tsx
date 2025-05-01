@@ -4,36 +4,54 @@
 
 "use client";
 
-import { useRef } from "react";
+import { ReactNode, useRef } from "react";
 import { AriaTextFieldProps, useTextField } from "react-aria";
 import styles from "./InputField.module.scss";
 import { ErrorIcon } from "../server/Icons";
 import { useL10n } from "../../hooks/l10n";
 
-export const InputField = (props: AriaTextFieldProps) => {
-  const { isRequired, label, isInvalid, value } = props;
+export const InputField = (
+  props: AriaTextFieldProps & {
+    iconButton?: ReactNode;
+    hasFloatingLabel?: boolean;
+  },
+) => {
+  const { isRequired, label, isInvalid, value, description, placeholder } =
+    props;
   const inputRef = useRef(null);
-  const { errorMessageProps, validationErrors, inputProps, labelProps } =
-    useTextField(props, inputRef);
+  const {
+    errorMessageProps,
+    validationErrors,
+    inputProps,
+    labelProps,
+    descriptionProps,
+  } = useTextField(props, inputRef);
   const l10n = useL10n();
 
   return (
     <div className={styles.input}>
-      <label {...labelProps} className={styles.inputLabel}>
-        {label}
-        {
-          // TODO: Add unit test when changing this code:
-          /* c8 ignore next */
-          isRequired ? <span aria-hidden="true">*</span> : ""
-        }
-      </label>
+      {label && (
+        <label
+          {...labelProps}
+          className={
+            props.hasFloatingLabel ? styles.floatingLabel : styles.inputLabel
+          }
+        >
+          {label}
+          {isRequired ? <span aria-hidden="true">*</span> : ""}
+        </label>
+      )}
       <input
         {...inputProps}
         ref={inputRef}
         className={`${styles.inputField} ${!value ? styles.noValue : ""} ${
           isInvalid ? styles.hasError : ""
         }`}
+        placeholder={placeholder ?? ""}
       />
+      {props.iconButton && (
+        <div className={styles.buttonIcon}>{props.iconButton}</div>
+      )}
       {isInvalid && (
         <div {...errorMessageProps} className={styles.inputMessage}>
           <ErrorIcon
@@ -47,6 +65,11 @@ export const InputField = (props: AriaTextFieldProps) => {
               ? props.errorMessage
               : validationErrors.join(" ")
           }
+        </div>
+      )}
+      {!isInvalid && description && (
+        <div {...descriptionProps} className={styles.inputMessage}>
+          {props.description}
         </div>
       )}
     </div>

@@ -5,9 +5,9 @@
 fix-flow-nav-high-risk-data-breaches = Vụ rò rỉ với rủi ro cao
 fix-flow-nav-leaked-passwords = Mật khẩu bị lộ
 fix-flow-nav-security-recommendations = Đề xuất bảo mật
-
 guided-resolution-flow-exit = Quay lại trang tổng quan
 guided-resolution-flow-next-arrow = Chuyển sang bước tiếp theo
+guided-resolution-flow-next-arrow-sub-step = Đi đến kết quả tiếp theo
 guided-resolution-flow-step-navigation-label = Các bước hướng dẫn
 
 # Celebration screens
@@ -142,7 +142,7 @@ security-recommendation-email-description = Thật không may, bạn không th�
 security-recommendation-email-step-one = Đừng nhấp vào liên kết trong email từ những người gửi không xác định; nếu nó có vẻ đến từ nguồn đáng tin cậy, hãy gọi trực tiếp để xác nhận
 security-recommendation-email-step-two = Hãy cẩn thận với <link_to_info>lừa đảo giả mạo</link_to_info>
 security-recommendation-email-step-three = Đánh dấu các email đáng ngờ là thư rác và chặn người gửi
-security-recommendation-email-step-four = Sử dụng <link_to_info>mặt nạ email của { -brand-relay }</link_to_info> để bảo vệ email của bạn trong tương lai
+security-recommendation-email-step-four = Sử dụng <link_to_info>email ẩn danh của { -brand-relay }</link_to_info> để bảo vệ email của bạn trong tương lai
 
 # IP security recommendation
 

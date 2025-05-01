@@ -7,32 +7,19 @@
 import { useEffect } from "react";
 import { useCookies } from "react-cookie";
 import { usePathname } from "next/navigation";
-import { FeatureFlagName } from "../../../db/tables/featureFlags";
+import GleanMetrics from "@mozilla/glean/metrics";
 import { useTelemetry } from "../../hooks/useTelemetry";
 import { GleanMetricMap } from "../../../telemetry/generated/_map";
 
-export type Props = {
-  experimentationId: string;
-  enabledFlags: FeatureFlagName[];
-};
-
 // Empty component that records a page view on first load.
-export const PageLoadEvent = (props: Props) => {
+export const PageLoadEvent = () => {
   const [cookies, setCookie] = useCookies([
-    "experimentationId",
     "attributionsFirstTouch",
     "attributionsLastTouch",
   ]);
   const pathname = usePathname();
 
-  const recordTelemetry = useTelemetry(props.experimentationId);
-
-  if (
-    props.experimentationId.startsWith("guest") &&
-    !cookies.experimentationId
-  ) {
-    setCookie("experimentationId", props.experimentationId);
-  }
+  const recordTelemetry = useTelemetry();
 
   // On first load of the page, record a page view.
   useEffect(() => {
@@ -42,6 +29,10 @@ export const PageLoadEvent = (props: Props) => {
     };
 
     recordTelemetry("page", "view", pageViewParams);
+    // Also record Glean's native page load events. They have less metadata,
+    // but can be used for auto-generated reports.
+    // See https://mozilla.github.io/glean.js/automatic_instrumentation/page_load_events/#page-load-event-api
+    GleanMetrics.pageLoad({ url: document.location.href });
   }, [recordTelemetry, pathname]);
 
   useEffect(() => {
@@ -81,9 +72,8 @@ function getUtmParams() {
       referrerUrl.search = "";
       // Remove any fragment identifiers.
       referrerUrl.hash = "";
-
       utmParams["referrer"] = referrerUrl.toString();
-    } catch (ex) {
+    } catch {
       console.error("Could not parse referrer as URL:", document.referrer);
     }
 

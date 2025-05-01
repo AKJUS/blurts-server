@@ -55,10 +55,14 @@ import {
 import { getLocale } from "../../../functions/universal/getLocale";
 import { signIn } from "next-auth/react";
 import { useTelemetry } from "../../../hooks/useTelemetry";
-import { CONST_ONEREP_DATA_BROKER_COUNT } from "../../../../constants";
+import {
+  CONST_ONEREP_DATA_BROKER_COUNT,
+  CONST_URL_MONITOR_LANDING_PAGE_ID,
+} from "../../../../constants";
 import { useCookies } from "react-cookie";
 import { modifyAttributionsForUrlSearchParams } from "../../../functions/universal/attributions";
 import { TelemetryButton } from "../../../components/client/TelemetryButton";
+import { FeatureFlagName } from "../../../../db/tables/featureFlags";
 
 export type Props = {
   "aria-labelledby": string;
@@ -70,6 +74,7 @@ export type Props = {
     yearly: number;
     monthly: number;
   };
+  enabledFeatureFlags: FeatureFlagName[];
 };
 
 type ScanLimitProp = {
@@ -98,7 +103,7 @@ export const PlansTable = (props: Props & ScanLimitProp) => {
   newSearchParam = modifyAttributionsForUrlSearchParams(
     newSearchParam,
     {
-      entrypoint: "monitor.mozilla.org-monitor-product-page",
+      entrypoint: CONST_URL_MONITOR_LANDING_PAGE_ID,
       form_type: "button",
       data_cta_position: "pricing",
     },
@@ -109,6 +114,9 @@ export const PlansTable = (props: Props & ScanLimitProp) => {
     },
   );
   searchParam.current = newSearchParam;
+  // SubPlat2 subscription links already have the UTM parameter `?plan` appended.
+  const additionalSubplatParamsString = `${props.enabledFeatureFlags.includes("SubPlat3") ? "?" : "&"}${searchParam.current.toString()}`;
+
   const monthlyPriceAnnualBilling = props.subscriptionBillingAmount["yearly"];
   const monthlyPriceMonthlyBilling = props.subscriptionBillingAmount["monthly"];
 
@@ -205,7 +213,7 @@ export const PlansTable = (props: Props & ScanLimitProp) => {
               aria-describedby="plansTableMonthlyOrYearly plansTableReassurancePlus"
               disabled={props.scanLimitReached}
               variant="primary"
-              href={`${props.premiumSubscriptionUrl[billingPeriod]}&${searchParam.current.toString()}`}
+              href={`${props.premiumSubscriptionUrl[billingPeriod]}${additionalSubplatParamsString}`}
               className={styles.cta}
               event={{
                 module: "upgradeIntent",
@@ -834,7 +842,7 @@ export const PlansTable = (props: Props & ScanLimitProp) => {
                   aria-describedby="plansTableMonthlyOrYearly plansTableReassurancePlus"
                   disabled={props.scanLimitReached}
                   variant="primary"
-                  href={`${props.premiumSubscriptionUrl[billingPeriod]}&${searchParam.current.toString()}`}
+                  href={`${props.premiumSubscriptionUrl[billingPeriod]}${additionalSubplatParamsString}`}
                   event={{
                     module: "upgradeIntent",
                     name: "click",
@@ -865,7 +873,7 @@ export const PlansTable = (props: Props & ScanLimitProp) => {
 };
 
 const Table = (
-  props: TableStateProps<object> & AriaTableProps<object> & ScanLimitProp,
+  props: TableStateProps<object> & AriaTableProps & ScanLimitProp,
 ) => {
   const tableRef = useRef<HTMLTableElement>(null);
   const tableState = useTableState(props);
